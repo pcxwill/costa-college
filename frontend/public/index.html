@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Costa College Iquique — Educación Bilingüe de Excelencia</title>
+  <meta name="description" content="Costa College Iquique. Colegio bilingüe con niveles Infant, Junior y Senior School. Formación integral de excelencia en Iquique, Chile.">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/home.css">
+</head>
+<body>
+
+  <!-- Quick Links Bar -->
+  <div class="quick-bar">
+    <div class="quick-bar-inner">
+      <a href="https://costacollege.cl/iquique/circulares/" target="_blank">📋 Circulares</a>
+      <a href="https://schoolnet.colegium.com/webapp/es_CL/login" target="_blank">🖥️ SchoolNet</a>
+      <a href="https://costacollege.cl/iquique/admision/" target="_blank">📝 Admisión</a>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="site-header" id="header">
+    <div class="header-inner">
+      <a href="/" class="logo">
+        <div class="logo-icon">CC</div>
+        <div class="logo-text">Costa <span>College</span></div>
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="/" class="active">Inicio</a>
+        
+        <div class="nav-dropdown">
+          <a href="#">Quiénes Somos ▾</a>
+          <div class="nav-dropdown-menu">
+            <a href="https://costacollege.cl/iquique/quienes-somos-2/">Misión y Visión</a>
+            <a href="https://costacollege.cl/iquique/director/">Mensaje del Director</a>
+            <a href="https://costacollege.cl/iquique/equipo-directivo/">Equipo Directivo</a>
+            <a href="https://costacollege.cl/iquique/profesores/">Docentes</a>
+            <a href="https://costacollege.cl/iquique/equipo-de-apoyo/">Convivencia Escolar</a>
+          </div>
+        </div>
+
+        <div class="nav-dropdown">
+          <a href="#">Ciclos ▾</a>
+          <div class="nav-dropdown-menu">
+            <a href="https://costacollege.cl/iquique/infant-school/">Infant School</a>
+            <a href="https://costacollege.cl/iquique/junior-school/">Junior School</a>
+            <a href="https://costacollege.cl/iquique/senior-school/">Senior School</a>
+          </div>
+        </div>
+
+        <a href="https://costacollege.cl/iquique/noticias/">Noticias</a>
+        <a href="#documentos">Documentos</a>
+        <a href="#contacto">Contacto</a>
+        <a href="intranet/" class="nav-cta">🔒 Intranet</a>
+      </nav>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-slider" id="heroSlider">
+      <div class="hero-slide active">
+        <img src="assets/images/hero-1.webp" alt="Costa College" class="hero-slide-bg" onerror="this.style.display='none'">
+      </div>
+      <div class="hero-slide">
+        <img src="assets/images/hero-2.webp" alt="Estudiantes" class="hero-slide-bg" onerror="this.style.display='none'">
+      </div>
+      <div class="hero-slide">
+        <img src="assets/images/hero-3.webp" alt="Campus" class="hero-slide-bg" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <div class="hero-overlay"></div>
+    
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">🎓 Educación Bilingüe desde 2018</div>
+        <h1>Formando el <span>futuro</span> con excelencia</h1>
+        <p class="hero-subtitle">En Infant School, creemos firmemente que un niño feliz es un niño exitoso. Ofrecemos un ambiente positivo y estimulante donde nuestros estudiantes aprenden, juegan y comparten.</p>
+        <div class="hero-actions">
+          <a href="https://costacollege.cl/iquique/admision/" class="btn btn-primary btn-lg">Proceso de Admisión</a>
+          <a href="#niveles" class="btn btn-secondary btn-lg">Conocer Más →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-dots" id="heroDots">
+      <button class="hero-dot active" data-slide="0"></button>
+      <button class="hero-dot" data-slide="1"></button>
+      <button class="hero-dot" data-slide="2"></button>
+    </div>
+  </section>
+
+  <!-- Info Bar -->
+  <section class="info-bar">
+    <div class="container">
+      <div class="info-bar-grid">
+        <div class="info-item animate-on-scroll">
+          <div class="info-icon">📞</div>
+          <div class="info-text">
+            <h4>Teléfono</h4>
+            <p>+56 57 2451518</p>
+          </div>
+        </div>
+        <div class="info-item animate-on-scroll">
+          <div class="info-icon">📱</div>
+          <div class="info-text">
+            <h4>WhatsApp</h4>
+            <p>+56 9 4409 7215</p>
+          </div>
+        </div>
+        <div class="info-item animate-on-scroll">
+          <div class="info-icon">📧</div>
+          <div class="info-text">
+            <h4>Email</h4>
+            <p>admision@costacollege.cl</p>
+          </div>
+        </div>
+        <div class="info-item animate-on-scroll">
+          <div class="info-icon">📍</div>
+          <div class="info-text">
+            <h4>Dirección</h4>
+            <p>Av. José F. Vergara N° 3285, Iquique</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Niveles / Ciclos -->
+  <section class="section-levels" id="niveles">
+    <div class="container">
+      <div class="section-title animate-on-scroll">
+        <h2>Nuestros Ciclos</h2>
+        <p>Acompañamos a nuestros estudiantes en cada etapa de su desarrollo integral</p>
+      </div>
+      <div class="levels-grid">
+        <a href="https://costacollege.cl/iquique/infant-school/" class="level-card animate-on-scroll">
+          <img src="assets/images/infant.webp" alt="Infant School" class="level-card-bg" onerror="this.parentElement.style.background='linear-gradient(135deg, #1a4a6e, #0a1628)'">
+          <div class="level-card-overlay"></div>
+          <div class="level-card-content">
+            <h3>Infant School</h3>
+            <p>Pre-Kinder a 2° Básico. Inmersión bilingüe temprana en un ambiente cálido y estimulante.</p>
+            <span class="level-card-link">Explorar →</span>
+          </div>
+        </a>
+        <a href="https://costacollege.cl/iquique/junior-school/" class="level-card animate-on-scroll">
+          <img src="assets/images/junior.webp" alt="Junior School" class="level-card-bg" onerror="this.parentElement.style.background='linear-gradient(135deg, #2d5a3d, #0a1628)'">
+          <div class="level-card-overlay"></div>
+          <div class="level-card-content">
+            <h3>Junior School</h3>
+            <p>3° a 6° Básico. Consolidación académica con enfoque bilingüe y desarrollo de habilidades.</p>
+            <span class="level-card-link">Explorar →</span>
+          </div>
+        </a>
+        <a href="https://costacollege.cl/iquique/senior-school/" class="level-card animate-on-scroll">
+          <img src="assets/images/senior.webp" alt="Senior School" class="level-card-bg" onerror="this.parentElement.style.background='linear-gradient(135deg, #4a2d5a, #0a1628)'">
+          <div class="level-card-overlay"></div>
+          <div class="level-card-content">
+            <h3>Senior School</h3>
+            <p>7° Básico a IV° Medio. Preparación universitaria con formación integral y bilingüe.</p>
+            <span class="level-card-link">Explorar →</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- About / Mission -->
+  <section class="section-about" id="mision">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-image animate-on-scroll">
+          <img src="assets/images/about.webp" alt="Costa College Campus" onerror="this.style.background='linear-gradient(135deg, var(--navy-light), var(--navy))'; this.style.display='block'">
+          <div class="about-image-accent">
+            <div class="number">2018</div>
+            <div class="label">Programa Bilingüe</div>
+          </div>
+        </div>
+        <div class="about-content animate-on-scroll">
+          <h2>Mensaje del <span>Director</span></h2>
+          <p>Queremos ser parte del crecimiento integral de sus hijos, acompañándolos en cada paso de su camino educativo. Nuestro compromiso es ofrecer una educación de excelencia en un ambiente bilingüe.</p>
+          <p>Adoptando la modalidad bilingüe desde el año 2018, contemplamos un programa de inmersión en el idioma inglés que prepara a nuestros estudiantes para un mundo globalizado.</p>
+          <p><strong>Mr. Marcos Rojas E.</strong><br><em>Director Costa College</em></p>
+          <div class="about-features">
+            <div class="about-feature">
+              <div class="about-feature-icon">🌎</div>
+              <span>Programa Bilingüe</span>
+            </div>
+            <div class="about-feature">
+              <div class="about-feature-icon">🎯</div>
+              <span>Formación Integral</span>
+            </div>
+            <div class="about-feature">
+              <div class="about-feature-icon">🏫</div>
+              <span>Infraestructura Moderna</span>
+            </div>
+            <div class="about-feature">
+              <div class="about-feature-icon">💻</div>
+              <span>Tecnología Educativa</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- News / Costa al Día -->
+  <section class="section-news" id="noticias">
+    <div class="container">
+      <div class="section-title animate-on-scroll">
+        <h2>Costa al Día</h2>
+        <p>Las últimas noticias y actividades de nuestra comunidad escolar</p>
+      </div>
+      <div class="news-grid">
+        <a href="https://costacollege.cl/iquique/2025/12/04/costa-al-dia-diciembre/" class="news-card animate-on-scroll" target="_blank">
+          <div class="news-card-img">📰</div>
+          <div class="news-card-body">
+            <div class="news-card-date">Diciembre 2025</div>
+            <h3>Costa al Día — Edición Diciembre</h3>
+            <p>Resumen de las actividades y logros del último mes del año escolar.</p>
+            <span class="news-card-link">Leer más →</span>
+          </div>
+        </a>
+        <a href="https://costacollege.cl/iquique/2025/12/04/costa-al-dia-noviembre-edicion-despedida-4to-medio/" class="news-card animate-on-scroll" target="_blank">
+          <div class="news-card-img">🎓</div>
+          <div class="news-card-body">
+            <div class="news-card-date">Noviembre 2025</div>
+            <h3>Despedida 4to Medio</h3>
+            <p>Especial despedida de nuestra generación de cuarto medio.</p>
+            <span class="news-card-link">Leer más →</span>
+          </div>
+        </a>
+        <a href="https://costacollege.cl/iquique/2025/09/11/costa-al-dia-septiembre/" class="news-card animate-on-scroll" target="_blank">
+          <div class="news-card-img">🇨🇱</div>
+          <div class="news-card-body">
+            <div class="news-card-date">Septiembre 2025</div>
+            <h3>Costa al Día — Edición Septiembre</h3>
+            <p>Celebración de fiestas patrias y actividades del mes.</p>
+            <span class="news-card-link">Leer más →</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Documents -->
+  <section class="section-docs" id="documentos">
+    <div class="container">
+      <div class="section-title animate-on-scroll">
+        <h2>Documentos Institucionales</h2>
+        <p>Acceda a nuestros documentos oficiales y reglamentos</p>
+      </div>
+      <div class="docs-grid">
+        <a href="https://costacollege.cl/iquique/wp-content/uploads/2026/04/Proyecto-Educativo-Institucional-2026-1.pdf" class="doc-card animate-on-scroll" target="_blank">
+          <div class="doc-icon">📄</div>
+          <h4>PEI 2026</h4>
+          <p>Proyecto Educativo Institucional</p>
+        </a>
+        <a href="https://costacollege.cl/iquique/wp-content/uploads/2025/04/Reglamento-Interno-de-Convivencia-Escolar-2025.pdf" class="doc-card animate-on-scroll" target="_blank">
+          <div class="doc-icon">📋</div>
+          <h4>Manual de Convivencia</h4>
+          <p>Reglamento Interno 2025</p>
+        </a>
+        <a href="https://costacollege.cl/iquique/wp-content/uploads/2026/04/Reglamento-de-Evaluacion-Calificacion-y-Promocion-2026.pdf" class="doc-card animate-on-scroll" target="_blank">
+          <div class="doc-icon">📊</div>
+          <h4>Reglamento de Evaluación</h4>
+          <p>Calificación y Promoción 2026</p>
+        </a>
+        <a href="https://costacollege.cl/iquique/wp-content/uploads/2025/05/PISE-COSTA-COLLEGE-2025.pdf" class="doc-card animate-on-scroll" target="_blank">
+          <div class="doc-icon">🛡️</div>
+          <h4>PISE 2025</h4>
+          <p>Plan Integral de Seguridad</p>
+        </a>
+        <a href="https://costacollege.cl/iquique/bilinguismo-costa-college-2/" class="doc-card animate-on-scroll" target="_blank">
+          <div class="doc-icon">🌎</div>
+          <h4>Bilingüismo</h4>
+          <p>Programa Costa College</p>
+        </a>
+        <a href="https://costacollege.cl/iquique/lista-de-utiles-2024/" class="doc-card animate-on-scroll" target="_blank">
+          <div class="doc-icon">✏️</div>
+          <h4>Lista de Útiles</h4>
+          <p>Año 2026</p>
+        </a>
+        <a href="https://costacollege.cl/iquique/horarios-de-clases-2024/" class="doc-card animate-on-scroll" target="_blank">
+          <div class="doc-icon">🕐</div>
+          <h4>Horarios de Clases</h4>
+          <p>Año 2026</p>
+        </a>
+        <a href="https://costacollege.cl/iquique/wp-content/uploads/2025/05/PROTOCOLO-DEC.pdf" class="doc-card animate-on-scroll" target="_blank">
+          <div class="doc-icon">📑</div>
+          <h4>Protocolo DEC</h4>
+          <p>Costa College 2025</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="section-contact" id="contacto">
+    <div class="container">
+      <div class="section-title animate-on-scroll">
+        <h2>Contáctanos</h2>
+        <p>Estamos aquí para resolver todas tus consultas</p>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-info animate-on-scroll">
+          <h3>Colegio Principal</h3>
+          <div class="contact-item">
+            <div class="contact-item-icon">📍</div>
+            <div>
+              <h4>Dirección</h4>
+              <p>Av. José Francisco Vergara N° 3285<br>Iquique, Chile</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-item-icon">📞</div>
+            <div>
+              <h4>Teléfonos</h4>
+              <p>+56 57 2451518<br>+56 9 4409 7215</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-item-icon">📧</div>
+            <div>
+              <h4>Correos</h4>
+              <p>
+                <a href="mailto:info@costacollege.cl">info@costacollege.cl</a><br>
+                <a href="mailto:admision@costacollege.cl">admision@costacollege.cl</a>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="contact-info animate-on-scroll">
+          <h3>Infant School</h3>
+          <div class="contact-item">
+            <div class="contact-item-icon">📍</div>
+            <div>
+              <h4>Dirección</h4>
+              <p>Av. José Francisco Vergara N° 3241<br>Iquique, Chile</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-item-icon">📞</div>
+            <div>
+              <h4>Teléfono</h4>
+              <p>+56 57 2441518</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-item-icon">📱</div>
+            <div>
+              <h4>WhatsApp</h4>
+              <p><a href="https://wa.me/56944097215">+56 9 4409 7215</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="logo">
+            <div class="logo-icon">CC</div>
+            <div class="logo-text">Costa <span>College</span></div>
+          </a>
+          <p>Educación bilingüe de excelencia en Iquique, Chile. Formando el futuro con valores, conocimiento y habilidades para la vida.</p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/costa_college_oficial/" target="_blank" title="Instagram">📸</a>
+            <a href="https://www.instagram.com/infantcostacollege/" target="_blank" title="Instagram Infant">🏫</a>
+            <a href="https://www.instagram.com/costa.al.dia/" target="_blank" title="Costa al Día">📰</a>
+            <a href="https://www.facebook.com/people/Cgpa-Costa/pfbid02MvwkhmEjjgA6D2KUrZ8vDW85cjYLv8GqGDQ76g7xQopecGE2GcML6aSosBeYCXTl/" target="_blank" title="Facebook">👥</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Ciclos</h4>
+          <ul>
+            <li><a href="https://costacollege.cl/iquique/infant-school/">Infant School</a></li>
+            <li><a href="https://costacollege.cl/iquique/junior-school/">Junior School</a></li>
+            <li><a href="https://costacollege.cl/iquique/senior-school/">Senior School</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Departamentos</h4>
+          <ul>
+            <li><a href="https://costacollege.cl/iquique/departamento-de-convivencia-escolar/">Convivencia Escolar</a></li>
+            <li><a href="https://costacollege.cl/iquique/departamento-de-ingles-y-plan-bilingue/">Inglés y Bilingüismo</a></li>
+            <li><a href="https://costacollege.cl/iquique/departamento-de-talleres-extra-escolares/">Talleres Extraescolares</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Comunidad</h4>
+          <ul>
+            <li><a href="https://costacollege.cl/iquique/ceal/">CEAL</a></li>
+            <li><a href="https://costacollege.cl/iquique/centro-de-padres/">Centro de Padres</a></li>
+            <li><a href="https://costacollege.cl/iquique/noticias/">Noticias</a></li>
+            <li><a href="intranet/">Intranet</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Costa College Iquique. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

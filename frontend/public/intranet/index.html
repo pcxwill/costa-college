@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intranet — Costa College</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="../styles/intranet.css">
+</head>
+<body>
+  <!-- Loading -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Login Page -->
+  <div class="login-page" id="loginPage">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-icon">CC</div>
+        <h1>Intranet Costa College</h1>
+        <p>Sistema de Reservas de Equipos Tecnológicos</p>
+      </div>
+
+      <div class="login-error" id="loginError"></div>
+
+      <form class="login-form" id="loginForm">
+        <div class="form-group">
+          <label class="form-label" for="loginEmail">Correo electrónico</label>
+          <input type="email" id="loginEmail" class="form-input" placeholder="usuario@costacollege.cl" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="loginPassword">Contraseña</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary login-btn" id="loginBtn">
+          Iniciar Sesión
+        </button>
+      </form>
+
+      <div class="login-back">
+        <a href="../">← Volver al sitio público</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // ── API Configuration ─────────────────────────────────────────
+    const API_URL = 'http://localhost:3001/api';
+
+    // ── Firebase SDK (loaded from CDN) ────────────────────────────
+    // We'll use the compat version for simplicity in vanilla JS
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="../js/auth.js"></script>
+</body>
+</html>

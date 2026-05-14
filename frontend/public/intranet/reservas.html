@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reservas — Intranet Costa College</title>
+  <link rel="stylesheet" href="../styles/main.css">
+  <link rel="stylesheet" href="../styles/intranet.css">
+</head>
+<body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p>Cargando...</p>
+  </div>
+
+  <div class="dashboard" id="dashboardApp" style="display:none;">
+    <!-- Dashboard Header -->
+    <header class="dash-header">
+      <div class="dash-header-left">
+        <a href="../" class="logo" style="text-decoration:none;">
+          <div class="logo-icon">CC</div>
+          <div class="logo-text">Costa <span>College</span></div>
+        </a>
+        <div class="dash-nav">
+          <a href="reservas.html" class="active">📅 Reservas</a>
+          <a href="reservas.html" id="navAdmin" class="hidden">⚙️ Administración</a>
+        </div>
+      </div>
+      <div class="dash-user">
+        <div class="dash-user-info">
+          <span class="dash-user-name" id="userName">Profesor</span>
+          <span class="dash-user-role" id="userRole">profesor</span>
+        </div>
+        <div class="dash-user-avatar" id="userAvatar">P</div>
+        <button class="dash-logout" onclick="logout()">Salir</button>
+      </div>
+    </header>
+
+    <!-- Dashboard Content -->
+    <main class="dash-content">
+      <div class="dash-title">
+        <h1>📅 Reserva de Equipos Tecnológicos</h1>
+        <p>Seleccione una fecha en el calendario y reserve el equipo que necesita</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-icon blue">📋</div>
+          <div>
+            <div class="stat-value" id="statMisReservas">0</div>
+            <div class="stat-label">Mis Reservas</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div>
+            <div class="stat-value" id="statHoy">0</div>
+            <div class="stat-label">Hoy</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange">📆</div>
+          <div>
+            <div class="stat-value" id="statSemana">0</div>
+            <div class="stat-label">Esta Semana</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">💻</div>
+          <div>
+            <div class="stat-value" id="statEquipos">5</div>
+            <div class="stat-label">Dependencias</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout: Form + Availability -->
+      <div class="reserva-layout">
+        <!-- Left: Calendar + Form -->
+        <div class="reserva-form-panel">
+          <h3>📅 Nueva Reserva</h3>
+
+          <!-- Calendar -->
+          <div class="calendar" id="calendar">
+            <div class="calendar-header">
+              <button class="calendar-nav-btn" id="calPrev">◀</button>
+              <h3 id="calMonthYear">Mayo 2026</h3>
+              <button class="calendar-nav-btn" id="calNext">▶</button>
+            </div>
+            <div class="calendar-weekdays">
+              <div class="calendar-weekday">Lun</div>
+              <div class="calendar-weekday">Mar</div>
+              <div class="calendar-weekday">Mié</div>
+              <div class="calendar-weekday">Jue</div>
+              <div class="calendar-weekday">Vie</div>
+              <div class="calendar-weekday">Sáb</div>
+              <div class="calendar-weekday">Dom</div>
+            </div>
+            <div class="calendar-days" id="calDays"></div>
+          </div>
+
+          <!-- Reservation Form -->
+          <form id="reservaForm" style="margin-top: var(--space-4);">
+            <div class="form-group">
+              <label class="form-label">Fecha Seleccionada</label>
+              <input type="text" id="formFecha" class="form-input" readonly placeholder="Seleccione en el calendario">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Dependencia</label>
+              <select id="formDependencia" class="form-select" required>
+                <option value="">Seleccione equipo...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bloque Horario</label>
+              <select id="formBloque" class="form-select" required>
+                <option value="">Seleccione bloque...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Curso</label>
+              <input type="text" id="formCurso" class="form-input" placeholder="Ej: 10th A, 6th A" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Asignatura</label>
+              <input type="text" id="formAsignatura" class="form-input" placeholder="Ej: Inglés, Lenguaje" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Actividad</label>
+              <select id="formActividad" class="form-select" required>
+                <option value="">Seleccione actividad...</option>
+                <option value="Actividad práctica">Actividad práctica</option>
+                <option value="Evaluación">Evaluación</option>
+                <option value="Investigación">Investigación</option>
+                <option value="Proyecto">Proyecto</option>
+                <option value="Presentación">Presentación</option>
+                <option value="Otra">Otra</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;" id="submitReserva">
+              Reservar
+            </button>
+          </form>
+        </div>
+
+        <!-- Right: Availability Table -->
+        <div>
+          <div class="availability-panel" id="availabilityPanel">
+            <div class="availability-header">
+              <h3>Disponibilidad del Día</h3>
+              <span class="availability-date" id="availDate">Seleccione una fecha</span>
+            </div>
+            <div style="overflow-x: auto;">
+              <table class="availability-table" id="availTable">
+                <thead>
+                  <tr>
+                    <th>Bloque</th>
+                    <th>Horario</th>
+                    <th>Estado</th>
+                    <th>Profesor</th>
+                    <th>Curso</th>
+                    <th>Asignatura</th>
+                    <th>Actividad</th>
+                  </tr>
+                </thead>
+                <tbody id="availBody">
+                  <tr><td colspan="7" class="text-center text-muted" style="padding:var(--space-8);">Seleccione una fecha y dependencia para ver la disponibilidad</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- My Reservations -->
+          <div class="reservas-list">
+            <h3>📋 Mis Reservas Activas</h3>
+            <div id="misReservas">
+              <p class="text-muted">Cargando reservas...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Section (hidden for non-admins) -->
+      <div id="adminSection" class="hidden" style="margin-top: var(--space-12);">
+        <h2 style="margin-bottom: var(--space-6);">⚙️ Panel de Administración</h2>
+        
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-tab="tabUsuarios">👥 Usuarios</button>
+          <button class="admin-tab" data-tab="tabTodasReservas">📅 Todas las Reservas</button>
+          <button class="admin-tab" data-tab="tabMantenimiento">🔧 Mantenimiento</button>
+        </div>
+
+        <!-- Users Tab -->
+        <div class="admin-section active" id="tabUsuarios">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-4);">
+            <h3 style="font-family:var(--font-body);">Gestión de Usuarios</h3>
+            <button class="btn btn-primary btn-sm" onclick="showCreateUserModal()">+ Crear Usuario</button>
+          </div>
+          <table class="data-table" id="usersTable">
+            <thead>
+              <tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="usersBody">
+              <tr><td colspan="5" class="text-center text-muted">Cargando usuarios...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- All Reservations Tab -->
+        <div class="admin-section" id="tabTodasReservas">
+          <div style="display:flex; gap:var(--space-4); margin-bottom:var(--space-4); flex-wrap:wrap; align-items:flex-end;">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Fecha</label>
+              <input type="date" id="adminFiltroFecha" class="form-input" style="width:180px;">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Dependencia</label>
+              <select id="adminFiltroDep" class="form-select" style="width:220px;">
+                <option value="">Todas</option>
+              </select>
+            </div>
+            <button class="btn btn-navy btn-sm" onclick="loadAllReservations()">Buscar</button>
+          </div>
+          <table class="data-table" id="allReservasTable">
+            <thead>
+              <tr><th>Fecha</th><th>Dependencia</th><th>Bloque</th><th>Horario</th><th>Profesor</th><th>Curso</th><th>Asignatura</th><th>Actividad</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="allReservasBody">
+              <tr><td colspan="9" class="text-center text-muted">Use los filtros para buscar reservas</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Maintenance Tab -->
+        <div class="admin-section" id="tabMantenimiento">
+          <div class="stat-card" style="max-width:500px;">
+            <div class="stat-icon orange">🧹</div>
+            <div>
+              <h4 style="font-family:var(--font-body); font-weight:600; margin-bottom:var(--space-2);">Limpieza Manual</h4>
+              <p class="text-sm text-muted" style="margin-bottom:var(--space-3);">Elimina reservas con fecha pasada. El cron automático se ejecuta cada Domingo a las 23:59.</p>
+              <button class="btn btn-danger btn-sm" onclick="runManualCleanup()">Ejecutar Limpieza</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create User Modal -->
+  <div class="modal-overlay" id="createUserModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Crear Nuevo Usuario</h2>
+        <button class="modal-close" onclick="closeModal('createUserModal')">&times;</button>
+      </div>
+      <form id="createUserForm">
+        <div class="form-group">
+          <label class="form-label">Nombre completo</label>
+          <input type="text" id="newUserName" class="form-input" placeholder="Juan Pérez" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="newUserEmail" class="form-input" placeholder="jperez@costacollege.cl" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input type="password" id="newUserPassword" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rol</label>
+          <select id="newUserRole" class="form-select">
+            <option value="profesor">Profesor</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Crear Usuario</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>const API_URL = 'http://localhost:3001/api';</script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/reservas.js"></script>
+</body>
+</html>
