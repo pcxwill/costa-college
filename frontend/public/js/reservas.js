@@ -418,18 +418,20 @@ async function loadUsers() {
   try {
     const res = await apiFetch('/admin/usuarios');
     const data = await res.json();
+    window.usersData = data.usuarios || [];
     const tbody = document.getElementById('usersBody');
-    if (!data.usuarios || data.usuarios.length === 0) {
+    if (window.usersData.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay usuarios</td></tr>';
       return;
     }
-    tbody.innerHTML = data.usuarios.map(u => `
+    tbody.innerHTML = window.usersData.map(u => `
       <tr>
         <td><strong>${u.nombre}</strong></td>
         <td>${u.email}</td>
         <td><span class="badge ${u.rol === 'admin' ? 'badge-warning' : 'badge-info'}">${u.rol}</span></td>
         <td><span class="badge ${u.activo !== false ? 'badge-success' : 'badge-danger'}">${u.activo !== false ? 'Activo' : 'Inactivo'}</span></td>
         <td>
+          <button class="btn btn-navy btn-sm" style="margin-right:4px;" onclick="showEditUserModal('${u.uid}')">Editar</button>
           <button class="btn btn-navy btn-sm" style="margin-right:4px;" onclick="showChangePasswordModal('${u.uid}')">Clave</button>
           ${u.uid !== currentUser.uid ? `<button class="btn btn-danger btn-sm" onclick="deactivateUser('${u.uid}')">Desactivar</button>` : '<em class="text-muted text-sm">Tú</em>'}
         </td>
@@ -491,6 +493,50 @@ function showChangePasswordModal(uid) {
         closeModal('changePasswordModal');
       } else {
         showToast(data.error || 'Error al actualizar contraseña', 'error');
+      }
+    } catch (err) {
+      showToast('Error de conexión', 'error');
+    }
+    btn.disabled = false;
+  };
+}
+
+function showEditUserModal(uid) {
+  const user = window.usersData.find(u => u.uid === uid);
+  if (!user) return;
+  
+  document.getElementById('editUid').value = uid;
+  document.getElementById('editUserName').value = user.nombre;
+  document.getElementById('editUserEmail').value = user.email;
+  document.getElementById('editUserRole').value = user.rol;
+  document.getElementById('editUserStatus').value = user.activo !== false ? 'true' : 'false';
+  
+  document.getElementById('editUserModal').classList.add('show');
+  
+  document.getElementById('editUserForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    
+    const payload = {
+      nombre: document.getElementById('editUserName').value,
+      email: document.getElementById('editUserEmail').value,
+      rol: document.getElementById('editUserRole').value,
+      activo: document.getElementById('editUserStatus').value === 'true'
+    };
+    
+    try {
+      const res = await apiFetch(`/admin/usuarios/${uid}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Usuario actualizado exitosamente', 'success');
+        closeModal('editUserModal');
+        loadUsers();
+      } else {
+        showToast(data.error || 'Error al actualizar usuario', 'error');
       }
     } catch (err) {
       showToast('Error de conexión', 'error');

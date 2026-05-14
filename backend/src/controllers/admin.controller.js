@@ -105,10 +105,11 @@ module.exports = function createAdminController(db, firebaseAuth, isMock) {
     async actualizarUsuario(req, res) {
       try {
         const { uid } = req.params;
-        const { nombre, rol, activo, password } = req.body;
+        const { nombre, email, rol, activo, password } = req.body;
 
         const updates = { updated_at: new Date().toISOString() };
         if (nombre !== undefined) updates.nombre = nombre;
+        if (email !== undefined) updates.email = email;
         if (rol !== undefined) updates.rol = rol;
         if (activo !== undefined) updates.activo = activo;
 
@@ -117,6 +118,7 @@ module.exports = function createAdminController(db, firebaseAuth, isMock) {
         if (!isMock) {
           const authUpdates = {};
           if (nombre) authUpdates.displayName = nombre;
+          if (email) authUpdates.email = email;
           if (password) authUpdates.password = password;
           
           if (Object.keys(authUpdates).length > 0) {

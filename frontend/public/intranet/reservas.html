@@ -247,6 +247,42 @@
     </main>
   </div>
 
+  <!-- Edit User Modal -->
+  <div class="modal-overlay" id="editUserModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Editar Usuario</h2>
+        <button class="modal-close" onclick="closeModal('editUserModal')">&times;</button>
+      </div>
+      <form id="editUserForm">
+        <input type="hidden" id="editUid">
+        <div class="form-group">
+          <label class="form-label">Nombre completo</label>
+          <input type="text" id="editUserName" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="editUserEmail" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rol</label>
+          <select id="editUserRole" class="form-select">
+            <option value="profesor">Profesor</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select id="editUserStatus" class="form-select">
+            <option value="true">Activo</option>
+            <option value="false">Inactivo</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Guardar Cambios</button>
+      </form>
+    </div>
+  </div>
+
   <!-- Change Password Modal -->
   <div class="modal-overlay" id="changePasswordModal">
     <div class="modal">
