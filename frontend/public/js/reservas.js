@@ -430,6 +430,7 @@ async function loadUsers() {
         <td><span class="badge ${u.rol === 'admin' ? 'badge-warning' : 'badge-info'}">${u.rol}</span></td>
         <td><span class="badge ${u.activo !== false ? 'badge-success' : 'badge-danger'}">${u.activo !== false ? 'Activo' : 'Inactivo'}</span></td>
         <td>
+          <button class="btn btn-navy btn-sm" style="margin-right:4px;" onclick="showChangePasswordModal('${u.uid}')">Clave</button>
           ${u.uid !== currentUser.uid ? `<button class="btn btn-danger btn-sm" onclick="deactivateUser('${u.uid}')">Desactivar</button>` : '<em class="text-muted text-sm">Tú</em>'}
         </td>
       </tr>
@@ -465,6 +466,36 @@ function showCreateUserModal() {
     } catch (e) {
       showToast('Error de conexión', 'error');
     }
+  };
+}
+
+function showChangePasswordModal(uid) {
+  document.getElementById('cpUid').value = uid;
+  document.getElementById('changePasswordForm').reset();
+  document.getElementById('changePasswordModal').classList.add('show');
+  
+  document.getElementById('changePasswordForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const newPassword = document.getElementById('cpNewPassword').value;
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    
+    try {
+      const res = await apiFetch(`/admin/usuarios/${uid}`, {
+        method: 'PUT',
+        body: JSON.stringify({ password: newPassword })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Contraseña actualizada exitosamente', 'success');
+        closeModal('changePasswordModal');
+      } else {
+        showToast(data.error || 'Error al actualizar contraseña', 'error');
+      }
+    } catch (err) {
+      showToast('Error de conexión', 'error');
+    }
+    btn.disabled = false;
   };
 }
 

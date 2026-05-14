@@ -247,6 +247,24 @@
     </main>
   </div>
 
+  <!-- Change Password Modal -->
+  <div class="modal-overlay" id="changePasswordModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Cambiar Contraseña</h2>
+        <button class="modal-close" onclick="closeModal('changePasswordModal')">&times;</button>
+      </div>
+      <form id="changePasswordForm">
+        <input type="hidden" id="cpUid">
+        <div class="form-group">
+          <label class="form-label">Nueva Contraseña</label>
+          <input type="password" id="cpNewPassword" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Actualizar Contraseña</button>
+      </form>
+    </div>
+  </div>
+
   <!-- Create User Modal -->
   <div class="modal-overlay" id="createUserModal">
     <div class="modal">

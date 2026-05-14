@@ -105,7 +105,7 @@ module.exports = function createAdminController(db, firebaseAuth, isMock) {
     async actualizarUsuario(req, res) {
       try {
         const { uid } = req.params;
-        const { nombre, rol, activo } = req.body;
+        const { nombre, rol, activo, password } = req.body;
 
         const updates = { updated_at: new Date().toISOString() };
         if (nombre !== undefined) updates.nombre = nombre;
@@ -114,9 +114,14 @@ module.exports = function createAdminController(db, firebaseAuth, isMock) {
 
         await usersCol.doc(uid).update(updates);
 
-        // Actualizar displayName en Firebase Auth si cambió el nombre
-        if (nombre && !isMock) {
-          await firebaseAuth.updateUser(uid, { displayName: nombre });
+        if (!isMock) {
+          const authUpdates = {};
+          if (nombre) authUpdates.displayName = nombre;
+          if (password) authUpdates.password = password;
+          
+          if (Object.keys(authUpdates).length > 0) {
+            await firebaseAuth.updateUser(uid, authUpdates);
+          }
         }
 
         console.log(`[Admin] ✏️ Usuario ${uid} actualizado`);
