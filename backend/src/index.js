@@ -91,6 +91,7 @@ app.get('/api/admin/usuarios', authMiddleware, adminCtrl.requireAdmin, adminCtrl
 app.post('/api/admin/usuarios', authMiddleware, adminCtrl.requireAdmin, adminCtrl.crearUsuario);
 app.put('/api/admin/usuarios/:uid', authMiddleware, adminCtrl.requireAdmin, adminCtrl.actualizarUsuario);
 app.delete('/api/admin/usuarios/:uid', authMiddleware, adminCtrl.requireAdmin, adminCtrl.desactivarUsuario);
+app.delete('/api/admin/usuarios/:uid/permanente', authMiddleware, adminCtrl.requireAdmin, adminCtrl.eliminarUsuarioPermanente);
 app.delete('/api/admin/reservas/:id', authMiddleware, adminCtrl.requireAdmin, adminCtrl.eliminarReserva);
 app.get('/api/admin/estadisticas', authMiddleware, adminCtrl.requireAdmin, adminCtrl.estadisticas);
 

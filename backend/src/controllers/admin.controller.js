@@ -120,6 +120,7 @@ module.exports = function createAdminController(db, firebaseAuth, isMock) {
           if (nombre) authUpdates.displayName = nombre;
           if (email) authUpdates.email = email;
           if (password) authUpdates.password = password;
+          if (activo !== undefined) authUpdates.disabled = !activo;
           
           if (Object.keys(authUpdates).length > 0) {
             await firebaseAuth.updateUser(uid, authUpdates);
@@ -135,13 +136,12 @@ module.exports = function createAdminController(db, firebaseAuth, isMock) {
     },
 
     /**
-     * DELETE /api/admin/usuarios/:uid — Desactivar un usuario
+     * DELETE /api/admin/usuarios/:uid — Desactivar un usuario (soft delete)
      */
     async desactivarUsuario(req, res) {
       try {
         const { uid } = req.params;
 
-        // No eliminar de Firebase Auth, solo desactivar
         await usersCol.doc(uid).update({
           activo: false,
           updated_at: new Date().toISOString(),
@@ -156,6 +156,27 @@ module.exports = function createAdminController(db, firebaseAuth, isMock) {
       } catch (error) {
         console.error('[Admin] Error al desactivar usuario:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
+      }
+    },
+
+    /**
+     * DELETE /api/admin/usuarios/:uid/permanente — Eliminar un usuario permanentemente
+     */
+    async eliminarUsuarioPermanente(req, res) {
+      try {
+        const { uid } = req.params;
+
+        await usersCol.doc(uid).delete();
+
+        if (!isMock) {
+          await firebaseAuth.deleteUser(uid);
+        }
+
+        console.log(`[Admin] 🗑️ Usuario ${uid} eliminado permanentemente`);
+        res.json({ message: 'Usuario eliminado permanentemente de la base de datos.' });
+      } catch (error) {
+        console.error('[Admin] Error al eliminar usuario permanentemente:', error);
+        res.status(500).json({ error: 'Error interno del servidor al eliminar' });
       }
     },
 

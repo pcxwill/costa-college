@@ -433,7 +433,10 @@ async function loadUsers() {
         <td>
           <button class="btn btn-navy btn-sm" style="margin-right:4px;" onclick="showEditUserModal('${u.uid}')">Editar</button>
           <button class="btn btn-navy btn-sm" style="margin-right:4px;" onclick="showChangePasswordModal('${u.uid}')">Clave</button>
-          ${u.uid !== currentUser.uid ? `<button class="btn btn-danger btn-sm" onclick="deactivateUser('${u.uid}')">Desactivar</button>` : '<em class="text-muted text-sm">Tú</em>'}
+          ${u.uid === currentUser.uid ? '<em class="text-muted text-sm">Tú</em>' : 
+            (u.activo !== false 
+              ? `<button class="btn btn-warning btn-sm" onclick="deactivateUser('${u.uid}')">Desactivar</button>`
+              : `<button class="btn btn-danger btn-sm" onclick="deleteUserPermanent('${u.uid}')">Borrar</button>`)}
         </td>
       </tr>
     `).join('');
@@ -554,6 +557,15 @@ async function deactivateUser(uid) {
   try {
     const res = await apiFetch(`/admin/usuarios/${uid}`, { method: 'DELETE' });
     if (res.ok) { showToast('Usuario desactivado', 'success'); loadUsers(); }
+    else { const d = await res.json(); showToast(d.error, 'error'); }
+  } catch (e) { showToast('Error de conexión', 'error'); }
+}
+
+async function deleteUserPermanent(uid) {
+  if (!confirm('¿Está seguro de eliminar este usuario PERMANENTEMENTE? Esta acción no se puede deshacer.')) return;
+  try {
+    const res = await apiFetch(`/admin/usuarios/${uid}/permanente`, { method: 'DELETE' });
+    if (res.ok) { showToast('Usuario eliminado', 'success'); loadUsers(); }
     else { const d = await res.json(); showToast(d.error, 'error'); }
   } catch (e) { showToast('Error de conexión', 'error'); }
 }
