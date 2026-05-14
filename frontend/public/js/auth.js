@@ -12,7 +12,7 @@ const AUTH_CONFIG = {
   measurementId: "G-CE9Q0Z8ZY9"
 };
 
-const API_URL = window.API_URL || 'http://localhost:3001/api';
+const API_URL = window.API_URL || 'https://costa-college-api.onrender.com/api';
 
 // State
 let currentUser = null;
