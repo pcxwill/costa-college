@@ -20,7 +20,7 @@ services:
   # Frontend Static Site  
   - type: web
     name: costa-college-web
-    type: static
+    env: static
     repo: https://github.com/pcxwill/costa-college
     buildCommand: echo "No build needed"
     staticPublishPath: frontend/public
