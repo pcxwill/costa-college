@@ -3,7 +3,7 @@ services:
   - type: web
     name: costa-college-api
     runtime: node
-    plan: starter
+    plan: free
     repo: https://github.com/pcxwill/costa-college
     buildCommand: cd backend && npm install
     startCommand: cd backend && node src/index.js
