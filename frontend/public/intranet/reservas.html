@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
   <link rel="stylesheet" href="../styles/main.css">
   <link rel="stylesheet" href="../styles/intranet.css">
 </head>
+
 <body>
   <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
@@ -17,14 +19,13 @@
     <!-- Dashboard Header -->
     <header class="dash-header">
       <div class="dash-header-left">
-        <a href="../" class="logo" style="text-decoration:none;">
-          <div class="logo-icon">CC</div>
-          <div class="logo-text">Costa <span>College</span></div>
+        <a href="../" class="logo" style="display: flex; align-items: center;">
+          <img src="../assets/images/logo.png" alt="Costa College" style="height: 40px; width: auto;">
         </a>
-        <div class="dash-nav">
+        <nav class="dash-nav">
           <a href="reservas.html" class="active">📅 Reservas</a>
           <a href="reservas.html" id="navAdmin" class="hidden">⚙️ Administración</a>
-        </div>
+        </nav>
       </div>
       <div class="dash-user">
         <div class="dash-user-info">
@@ -108,27 +109,69 @@
             </div>
             <div class="form-group">
               <label class="form-label">Dependencia</label>
-              <select id="formDependencia" class="form-select" required>
+              <select id="formDependencia" class="form-select" required
+                oninvalid="this.setCustomValidity('Por favor, seleccione una opción.')"
+                oninput="this.setCustomValidity('')">
                 <option value="">Seleccione equipo...</option>
               </select>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="bloquesGroup">
               <label class="form-label">Bloque Horario</label>
-              <select id="formBloque" class="form-select" required>
-                <option value="">Seleccione bloque...</option>
-              </select>
+              <div id="bloquesContainer">
+                <div class="bloque-row" style="display: flex; gap: var(--space-2); margin-bottom: var(--space-2);">
+                  <select name="bloques[]" class="form-select bloque-select" required
+                    oninvalid="this.setCustomValidity('Por favor, seleccione una opción.')"
+                    oninput="this.setCustomValidity('')">
+                    <option value="">Seleccione bloque...</option>
+                  </select>
+                  <button type="button" class="btn btn-navy" onclick="addBloqueRow()" style="padding: 0 var(--space-3);"
+                    title="Añadir otro bloque">+</button>
+                </div>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label">Curso</label>
-              <input type="text" id="formCurso" class="form-input" placeholder="Ej: 10th A, 6th A" required>
+              <select id="formCurso" class="form-select" required
+                oninvalid="this.setCustomValidity('Por favor, seleccione una opción.')"
+                oninput="this.setCustomValidity('')">
+                <option value="">Seleccione curso...</option>
+                <option value="1ºA">1ºA</option>
+                <option value="2ºA">2ºA</option>
+                <option value="3ºA">3ºA</option>
+                <option value="4ºA">4ºA</option>
+                <option value="5ºA">5ºA</option>
+                <option value="6ºA">6ºA</option>
+                <option value="7ºA">7ºA</option>
+                <option value="8ºA">8ºA</option>
+                <option value="8ºB">8ºB</option>
+                <option value="9ºA">9ºA</option>
+                <option value="10ºA">10ºA</option>
+                <option value="11ºA">11ºA</option>
+                <option value="12ºA">12ºA</option>
+                <option value="D1 Ciencias del ejercicio físico y deportivo">D1 Ciencias del ejercicio físico y
+                  deportivo</option>
+                <option value="D1 Lectura y escritura especializada">D1 Lectura y escritura especializada</option>
+                <option value="D1 Química">D1 Química</option>
+                <option value="D2 Comprensión histórica del presente">D2 Comprensión histórica del presente</option>
+                <option value="D2 Probabilidades y estadística">D2 Probabilidades y estadística</option>
+                <option value="D2 Expresión corporal">D2 Expresión corporal</option>
+                <option value="D3 Biología celular y molecular">D3 Biología celular y molecular</option>
+                <option value="D3 Interpretación musical">D3 Interpretación musical</option>
+                <option value="D3 Participación y argumentación en democracia">D3 Participación y argumentación en
+                  democracia</option>
+              </select>
             </div>
             <div class="form-group">
               <label class="form-label">Asignatura</label>
-              <input type="text" id="formAsignatura" class="form-input" placeholder="Ej: Inglés, Lenguaje" required>
+              <input type="text" id="formAsignatura" class="form-input" placeholder="Ej: Inglés, Lenguaje" required
+                oninvalid="this.setCustomValidity('Por favor, complete este campo.')"
+                oninput="this.setCustomValidity('')">
             </div>
             <div class="form-group">
               <label class="form-label">Actividad</label>
-              <select id="formActividad" class="form-select" required>
+              <select id="formActividad" class="form-select" required
+                oninvalid="this.setCustomValidity('Por favor, seleccione una opción.')"
+                oninput="this.setCustomValidity('')">
                 <option value="">Seleccione actividad...</option>
                 <option value="Actividad práctica">Actividad práctica</option>
                 <option value="Evaluación">Evaluación</option>
@@ -165,7 +208,10 @@
                   </tr>
                 </thead>
                 <tbody id="availBody">
-                  <tr><td colspan="7" class="text-center text-muted" style="padding:var(--space-8);">Seleccione una fecha y dependencia para ver la disponibilidad</td></tr>
+                  <tr>
+                    <td colspan="7" class="text-center text-muted" style="padding:var(--space-8);">Seleccione una fecha
+                      y dependencia para ver la disponibilidad</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -184,7 +230,7 @@
       <!-- Admin Section (hidden for non-admins) -->
       <div id="adminSection" class="hidden" style="margin-top: var(--space-12);">
         <h2 style="margin-bottom: var(--space-6);">⚙️ Panel de Administración</h2>
-        
+
         <div class="admin-tabs">
           <button class="admin-tab active" data-tab="tabUsuarios">👥 Usuarios</button>
           <button class="admin-tab" data-tab="tabTodasReservas">📅 Todas las Reservas</button>
@@ -199,17 +245,26 @@
           </div>
           <table class="data-table" id="usersTable">
             <thead>
-              <tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
+              <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
             </thead>
             <tbody id="usersBody">
-              <tr><td colspan="5" class="text-center text-muted">Cargando usuarios...</td></tr>
+              <tr>
+                <td colspan="5" class="text-center text-muted">Cargando usuarios...</td>
+              </tr>
             </tbody>
           </table>
         </div>
 
         <!-- All Reservations Tab -->
         <div class="admin-section" id="tabTodasReservas">
-          <div style="display:flex; gap:var(--space-4); margin-bottom:var(--space-4); flex-wrap:wrap; align-items:flex-end;">
+          <div
+            style="display:flex; gap:var(--space-4); margin-bottom:var(--space-4); flex-wrap:wrap; align-items:flex-end;">
             <div class="form-group" style="margin:0;">
               <label class="form-label">Fecha</label>
               <input type="date" id="adminFiltroFecha" class="form-input" style="width:180px;">
@@ -224,10 +279,22 @@
           </div>
           <table class="data-table" id="allReservasTable">
             <thead>
-              <tr><th>Fecha</th><th>Dependencia</th><th>Bloque</th><th>Horario</th><th>Profesor</th><th>Curso</th><th>Asignatura</th><th>Actividad</th><th>Acciones</th></tr>
+              <tr>
+                <th>Fecha</th>
+                <th>Dependencia</th>
+                <th>Bloque</th>
+                <th>Horario</th>
+                <th>Profesor</th>
+                <th>Curso</th>
+                <th>Asignatura</th>
+                <th>Actividad</th>
+                <th>Acciones</th>
+              </tr>
             </thead>
             <tbody id="allReservasBody">
-              <tr><td colspan="9" class="text-center text-muted">Use los filtros para buscar reservas</td></tr>
+              <tr>
+                <td colspan="9" class="text-center text-muted">Use los filtros para buscar reservas</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -237,8 +304,10 @@
           <div class="stat-card" style="max-width:500px;">
             <div class="stat-icon orange">🧹</div>
             <div>
-              <h4 style="font-family:var(--font-body); font-weight:600; margin-bottom:var(--space-2);">Limpieza Manual</h4>
-              <p class="text-sm text-muted" style="margin-bottom:var(--space-3);">Elimina reservas con fecha pasada. El cron automático se ejecuta cada Domingo a las 23:59.</p>
+              <h4 style="font-family:var(--font-body); font-weight:600; margin-bottom:var(--space-2);">Limpieza Manual
+              </h4>
+              <p class="text-sm text-muted" style="margin-bottom:var(--space-3);">Elimina reservas con fecha pasada. El
+                cron automático se ejecuta cada Domingo a las 23:59.</p>
               <button class="btn btn-danger btn-sm" onclick="runManualCleanup()">Ejecutar Limpieza</button>
             </div>
           </div>
@@ -294,7 +363,8 @@
         <input type="hidden" id="cpUid">
         <div class="form-group">
           <label class="form-label">Nueva Contraseña</label>
-          <input type="password" id="cpNewPassword" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6">
+          <input type="password" id="cpNewPassword" class="form-input" placeholder="Mínimo 6 caracteres" required
+            minlength="6">
         </div>
         <button type="submit" class="btn btn-primary" style="width:100%;">Actualizar Contraseña</button>
       </form>
@@ -319,7 +389,8 @@
         </div>
         <div class="form-group">
           <label class="form-label">Contraseña</label>
-          <input type="password" id="newUserPassword" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6">
+          <input type="password" id="newUserPassword" class="form-input" placeholder="Mínimo 6 caracteres" required
+            minlength="6">
         </div>
         <div class="form-group">
           <label class="form-label">Rol</label>
@@ -341,4 +412,5 @@
   <script src="../js/auth.js"></script>
   <script src="../js/reservas.js"></script>
 </body>
+
 </html>

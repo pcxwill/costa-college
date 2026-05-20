@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Intranet — Costa College</title>
   <link rel="stylesheet" href="../styles/main.css">
   <link rel="stylesheet" href="../styles/intranet.css">
+  <link rel="icon" href="../assets/images/logo.png" type="image/png">
 </head>
+
 <body>
   <!-- Loading -->
   <div class="loading-overlay" id="loadingOverlay">
@@ -18,8 +21,9 @@
   <div class="login-page" id="loginPage">
     <div class="login-card">
       <div class="login-logo">
-        <div class="logo-icon">CC</div>
+        <img src="../assets/images/logo.png" alt="Costa College Escudo" style="height: 80px; width: auto; margin: 0 auto var(--space-4); display: block;">
         <h1>Intranet Costa College</h1>
+        <p style="font-style: italic; color: var(--gold); margin-bottom: var(--space-2);">"Formando desde el Corazón"</p>
         <p>Sistema de Reservas de Equipos Tecnológicos</p>
       </div>
 
@@ -55,4 +59,5 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="../js/auth.js"></script>
 </body>
+
 </html>

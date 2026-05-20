@@ -31,6 +31,23 @@ document.addEventListener('DOMContentLoaded', () => {
         slideInterval = setInterval(nextSlide, 5000);
       });
     });
+
+    const prevBtn = document.getElementById('heroPrev');
+    const nextBtn = document.getElementById('heroNext');
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        clearInterval(slideInterval);
+        goToSlide((currentSlide - 1 + slides.length) % slides.length);
+        slideInterval = setInterval(nextSlide, 5000);
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        clearInterval(slideInterval);
+        nextSlide();
+        slideInterval = setInterval(nextSlide, 5000);
+      });
+    }
   }
 
   // ── Mobile Menu ──────────────────────────────────────────────────

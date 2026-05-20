@@ -177,7 +177,7 @@ function selectDate(dateStr) {
 // ── Populate Form ───────────────────────────────────────────────────
 function populateFormSelects() {
   const depSelect = document.getElementById('formDependencia');
-  const bloqueSelect = document.getElementById('formBloque');
+  const bloqueSelect = document.querySelector('.bloque-select');
   const adminDepSelect = document.getElementById('adminFiltroDep');
 
   CONFIG.dependencias.forEach(dep => {
@@ -196,7 +196,7 @@ function populateFormSelects() {
     const opt = document.createElement('option');
     opt.value = b.id;
     opt.textContent = `Bloque ${b.id}: ${b.horario}`;
-    bloqueSelect.appendChild(opt);
+    if (bloqueSelect) bloqueSelect.appendChild(opt);
   });
 
   depSelect.addEventListener('change', () => {
@@ -253,10 +253,30 @@ function renderAvailability(data, filterDepId) {
           <td>—</td><td>—</td><td>—</td><td>—</td>
         `;
         row.addEventListener('click', () => {
+          const fechaSel = document.getElementById('formFecha').value;
+          if (fechaSel <= todayStr()) {
+            showToast('Las reservas no pueden realizarse el mismo día.', 'warning');
+            return;
+          }
+
           document.getElementById('formDependencia').value = dep.id;
-          document.getElementById('formBloque').value = bloque.id;
+
+          const selects = Array.from(document.querySelectorAll('.bloque-select'));
+          if (selects.some(s => s.value == bloque.id)) {
+            showToast(`El bloque ${bloque.id} ya está en la selección.`, 'warning');
+            return;
+          }
+
+          let emptySelect = selects.find(s => s.value === '');
+          if (!emptySelect) {
+            window.addBloqueRow();
+            const newSelects = document.querySelectorAll('.bloque-select');
+            emptySelect = newSelects[newSelects.length - 1];
+          }
+
+          emptySelect.value = bloque.id;
           document.getElementById('formCurso').focus();
-          showToast(`Bloque ${bloque.id} seleccionado. Complete el formulario.`, 'info');
+          showToast(`Bloque ${bloque.id} agregado. Complete el formulario.`, 'info');
         });
       } else {
         row.className = 'slot-occupied';
@@ -283,34 +303,58 @@ function setupReservationForm() {
     const btn = document.getElementById('submitReserva');
     const fecha = document.getElementById('formFecha').value;
     const dependencia_id = document.getElementById('formDependencia').value;
-    const bloque = document.getElementById('formBloque').value;
+    const selects = document.querySelectorAll('.bloque-select');
+    const bloques = Array.from(selects).map(s => parseInt(s.value)).filter(b => !isNaN(b));
+    const uniqueBloques = [...new Set(bloques)];
+
     const curso = document.getElementById('formCurso').value;
     const asignatura = document.getElementById('formAsignatura').value;
     const actividad = document.getElementById('formActividad').value;
 
     if (!fecha) { showToast('Seleccione una fecha en el calendario', 'warning'); return; }
+
+    if (fecha <= todayStr()) {
+      showToast('No se pueden realizar reservas el mismo día', 'warning');
+      return;
+    }
+
     if (!dependencia_id) { showToast('Seleccione una dependencia', 'warning'); return; }
-    if (!bloque) { showToast('Seleccione un bloque horario', 'warning'); return; }
+    if (uniqueBloques.length === 0) { showToast('Seleccione al menos un bloque horario', 'warning'); return; }
 
     btn.disabled = true;
     btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto;"></div>';
 
+    let successCount = 0;
+    let errorMsgs = [];
+
     try {
-      const res = await apiFetch('/reservas', {
-        method: 'POST',
-        body: JSON.stringify({ fecha, bloque: parseInt(bloque), dependencia_id, curso, asignatura, actividad })
-      });
+      await Promise.all(uniqueBloques.map(async (bloque) => {
+        const res = await apiFetch('/reservas', {
+          method: 'POST',
+          body: JSON.stringify({ fecha, bloque, dependencia_id, curso, asignatura, actividad })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          successCount++;
+        } else {
+          errorMsgs.push(`B${bloque}: ${data.message || data.error || 'Error'}`);
+        }
+      }));
 
-      const data = await res.json();
-
-      if (res.ok) {
-        showToast('✅ Reserva creada exitosamente', 'success');
+      if (successCount > 0) {
+        showToast(`✅ ${successCount} bloque(s) reservado(s) exitosamente`, 'success');
         document.getElementById('reservaForm').reset();
+
+        // Remove extra block rows
+        document.querySelectorAll('.bloque-row:not(:first-child)').forEach(r => r.remove());
+
         document.getElementById('formFecha').value = fecha; // Keep date
         await loadMyReservations();
         loadAvailability(fecha);
-      } else {
-        showToast(data.message || data.error || 'Error al crear reserva', 'error');
+      }
+
+      if (errorMsgs.length > 0) {
+        showToast('Errores: ' + errorMsgs.join(', '), 'error', 6000);
       }
     } catch (e) {
       showToast('Error de conexión con el servidor', 'error');
@@ -433,10 +477,10 @@ async function loadUsers() {
         <td>
           <button class="btn btn-navy btn-sm" style="margin-right:4px;" onclick="showEditUserModal('${u.uid}')">Editar</button>
           <button class="btn btn-navy btn-sm" style="margin-right:4px;" onclick="showChangePasswordModal('${u.uid}')">Clave</button>
-          ${u.uid === currentUser.uid ? '<em class="text-muted text-sm">Tú</em>' : 
-            (u.activo !== false 
-              ? `<button class="btn btn-warning btn-sm" onclick="deactivateUser('${u.uid}')">Desactivar</button>`
-              : `<button class="btn btn-danger btn-sm" onclick="deleteUserPermanent('${u.uid}')">Borrar</button>`)}
+          ${u.uid === currentUser.uid ? '<em class="text-muted text-sm">Tú</em>' :
+        (u.activo !== false
+          ? `<button class="btn btn-warning btn-sm" onclick="deactivateUser('${u.uid}')">Desactivar</button>`
+          : `<button class="btn btn-danger btn-sm" onclick="deleteUserPermanent('${u.uid}')">Borrar</button>`)}
         </td>
       </tr>
     `).join('');
@@ -478,13 +522,13 @@ function showChangePasswordModal(uid) {
   document.getElementById('cpUid').value = uid;
   document.getElementById('changePasswordForm').reset();
   document.getElementById('changePasswordModal').classList.add('show');
-  
+
   document.getElementById('changePasswordForm').onsubmit = async (e) => {
     e.preventDefault();
     const newPassword = document.getElementById('cpNewPassword').value;
     const btn = e.target.querySelector('button[type="submit"]');
     btn.disabled = true;
-    
+
     try {
       const res = await apiFetch(`/admin/usuarios/${uid}`, {
         method: 'PUT',
@@ -507,27 +551,27 @@ function showChangePasswordModal(uid) {
 function showEditUserModal(uid) {
   const user = window.usersData.find(u => u.uid === uid);
   if (!user) return;
-  
+
   document.getElementById('editUid').value = uid;
   document.getElementById('editUserName').value = user.nombre;
   document.getElementById('editUserEmail').value = user.email;
   document.getElementById('editUserRole').value = user.rol;
   document.getElementById('editUserStatus').value = user.activo !== false ? 'true' : 'false';
-  
+
   document.getElementById('editUserModal').classList.add('show');
-  
+
   document.getElementById('editUserForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('button[type="submit"]');
     btn.disabled = true;
-    
+
     const payload = {
       nombre: document.getElementById('editUserName').value,
       email: document.getElementById('editUserEmail').value,
       rol: document.getElementById('editUserRole').value,
       activo: document.getElementById('editUserStatus').value === 'true'
     };
-    
+
     try {
       const res = await apiFetch(`/admin/usuarios/${uid}`, {
         method: 'PUT',
@@ -636,3 +680,29 @@ document.addEventListener('click', (e) => {
     e.target.classList.remove('show');
   }
 });
+
+// Row adding for multiple blocks
+window.addBloqueRow = function () {
+  const container = document.getElementById('bloquesContainer');
+  const firstSelect = container.querySelector('.bloque-select');
+  if (!firstSelect) return;
+
+  const newRow = document.createElement('div');
+  newRow.className = 'bloque-row';
+  newRow.style.cssText = 'display: flex; gap: var(--space-2); margin-bottom: var(--space-2);';
+
+  const newSelect = firstSelect.cloneNode(true);
+  newSelect.value = '';
+
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'btn btn-danger';
+  removeBtn.style.padding = '0 var(--space-3)';
+  removeBtn.textContent = '-';
+  removeBtn.title = 'Quitar bloque';
+  removeBtn.onclick = function () { newRow.remove(); };
+
+  newRow.appendChild(newSelect);
+  newRow.appendChild(removeBtn);
+  container.appendChild(newRow);
+};
