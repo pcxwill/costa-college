@@ -60,6 +60,7 @@ async function initDashboard() {
   const adminFiltroFecha = document.getElementById('adminFiltroFecha');
   if (adminFiltroFecha) adminFiltroFecha.value = todayStr();
 
+  startLiveClock();
   hideLoading();
 }
 
@@ -280,17 +281,34 @@ function renderAvailability(data, filterDepId) {
           showToast(`Bloque ${bloque.id} agregado. Complete el formulario.`, 'info');
         });
       } else {
-        row.className = 'slot-occupied';
         const r = bloque.reserva;
-        row.innerHTML = `
-          <td><strong>B${bloque.id}</strong></td>
-          <td>${bloque.horario}</td>
-          <td><span class="badge badge-danger">Ocupado</span></td>
-          <td>${r ? r.profesor : '—'}</td>
-          <td>${r ? r.curso : '—'}</td>
-          <td>${r ? r.asignatura : '—'}</td>
-          <td>${r ? r.actividad : '—'}</td>
-        `;
+        const isMine = r && currentUser && r.profesor_uid === currentUser.uid;
+
+        if (isMine) {
+          row.className = 'slot-occupied slot-mine';
+          row.style.backgroundColor = 'rgba(0, 123, 255, 0.08)';
+          row.style.borderLeft = '4px solid var(--color-primary)';
+          row.innerHTML = `
+            <td><strong>B${bloque.id}</strong></td>
+            <td>${bloque.horario}</td>
+            <td><span class="badge" style="background-color: var(--color-primary); color: white;">Tu Reserva</span></td>
+            <td><strong>${r.profesor}</strong></td>
+            <td><strong>${r.curso}</strong></td>
+            <td><strong>${r.asignatura}</strong></td>
+            <td><strong>${r.actividad}</strong></td>
+          `;
+        } else {
+          row.className = 'slot-occupied';
+          row.innerHTML = `
+            <td><strong>B${bloque.id}</strong></td>
+            <td>${bloque.horario}</td>
+            <td><span class="badge badge-danger">Ocupado</span></td>
+            <td>${r ? r.profesor : '—'}</td>
+            <td>${r ? r.curso : '—'}</td>
+            <td>${r ? r.asignatura : '—'}</td>
+            <td>${r ? r.actividad : '—'}</td>
+          `;
+        }
       }
       tbody.appendChild(row);
     });
@@ -379,13 +397,15 @@ async function loadMyReservations() {
   }
 }
 
-function isBlockActive(reservaFecha, horarioStr) {
+function getReservationStatus(reservaFecha, horarioStr) {
   const today = new Date();
   const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-  if (reservaFecha !== todayStr) return false;
+
+  if (reservaFecha < todayStr) return 'finalized';
+  if (reservaFecha > todayStr) return 'upcoming';
 
   const parts = horarioStr.split('-');
-  if (parts.length !== 2) return false;
+  if (parts.length !== 2) return 'upcoming';
   const [startStr, endStr] = parts.map(p => p.trim());
 
   const [startH, startM] = startStr.split(':').map(Number);
@@ -395,13 +415,19 @@ function isBlockActive(reservaFecha, horarioStr) {
   const startMinutes = startH * 60 + startM;
   const endMinutes = endH * 60 + endM;
 
-  return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+  if (currentMinutes > endMinutes) {
+    return 'finalized';
+  } else if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
+    return 'active';
+  } else {
+    return 'upcoming';
+  }
 }
 
 function renderMyReservations() {
   const container = document.getElementById('misReservas');
   if (misReservasData.length === 0) {
-    container.innerHTML = '<p class="text-muted" style="padding:var(--space-4);">No tienes reservas activas.</p>';
+    container.innerHTML = '<p class="text-muted" style="padding:var(--space-4);">No tienes reservas.</p>';
     return;
   }
 
@@ -409,30 +435,65 @@ function renderMyReservations() {
   const isDebugTest = urlParams.has('debug') || urlParams.has('test');
 
   const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-  container.innerHTML = misReservasData.map(r => {
+
+  // Ordenar reservas: En curso primero, Activas después, Finalizadas al último
+  const sortedReservas = [...misReservasData].sort((a, b) => {
+    const statusA = getReservationStatus(a.fecha, a.bloque_horario);
+    const statusB = getReservationStatus(b.fecha, b.bloque_horario);
+    const score = { 'active': 0, 'upcoming': 1, 'finalized': 2 };
+    
+    if (score[statusA] !== score[statusB]) {
+      return score[statusA] - score[statusB];
+    }
+    if (a.fecha !== b.fecha) return a.fecha.localeCompare(b.fecha);
+    return a.bloque - b.bloque;
+  });
+
+  container.innerHTML = sortedReservas.map(r => {
     const [y, m, d] = r.fecha.split('-');
-    const active = isBlockActive(r.fecha, r.bloque_horario) || isDebugTest;
-    const assignBtn = active ? `
-      <button class="btn btn-navy btn-sm" onclick="openAsignarModal('${r.id}', '${r.curso}', '${r.asignatura}', '${r.fecha}')" style="margin-right:4px;">Asignar Equipos</button>
-    ` : '';
+    const status = getReservationStatus(r.fecha, r.bloque_horario);
+
+    let badgeHtml = '';
+    let actionsHtml = '';
+
+    if (status === 'finalized') {
+      badgeHtml = `<span class="badge" style="background-color: #6c757d; color: white; user-select: none;">Finalizada</span>`;
+      if (isDebugTest) {
+        actionsHtml = `<button class="btn btn-navy btn-sm" onclick="openAsignarModal('${r.id}', '${r.curso}', '${r.asignatura}', '${r.fecha}')" style="margin-right:4px;">Asignar (Debug)</button>`;
+      }
+    } else if (status === 'active') {
+      badgeHtml = `<span class="badge" style="background-color: #007bff; color: white; animation: pulse 1.5s infinite; user-select: none;">En Curso</span>`;
+      actionsHtml = `
+        <button class="btn btn-navy btn-sm" onclick="openAsignarModal('${r.id}', '${r.curso}', '${r.asignatura}', '${r.fecha}')" style="margin-right:4px;">Asignar Equipos</button>
+        <button class="btn btn-danger btn-sm" onclick="cancelReservation('${r.id}')">Cancelar</button>
+      `;
+    } else {
+      badgeHtml = `<span class="badge badge-success" style="user-select: none;">Activa</span>`;
+      const debugBtn = isDebugTest ? `
+        <button class="btn btn-navy btn-sm" onclick="openAsignarModal('${r.id}', '${r.curso}', '${r.asignatura}', '${r.fecha}')" style="margin-right:4px;">Asignar (Debug)</button>
+      ` : '';
+      actionsHtml = `
+        ${debugBtn}
+        <button class="btn btn-danger btn-sm" onclick="cancelReservation('${r.id}')">Cancelar</button>
+      `;
+    }
 
     return `
-      <div class="reserva-card">
+      <div class="reserva-card" style="${status === 'finalized' ? 'opacity: 0.75; background: var(--bg-body); border-color: rgba(0,0,0,0.05);' : ''}">
         <div class="reserva-info">
-          <div class="reserva-date-badge">
+          <div class="reserva-date-badge" style="${status === 'finalized' ? 'background: #6c757d; box-shadow: none;' : ''}">
             <span class="day">${parseInt(d)}</span>
             <span class="month">${months[parseInt(m) - 1]}</span>
           </div>
           <div class="reserva-details">
-            <h4>${r.dependencia_nombre || r.dependencia_id}</h4>
+            <h4 style="${status === 'finalized' ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${r.dependencia_nombre || r.dependencia_id}</h4>
             <p>Bloque ${r.bloque} (${r.bloque_horario}) · ${r.curso} · ${r.asignatura} · ${r.actividad}</p>
           </div>
         </div>
         <div class="reserva-meta" style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
-          <span class="badge badge-success">Activa</span>
+          ${badgeHtml}
           <div style="display:flex; gap:4px;">
-            ${assignBtn}
-            <button class="btn btn-danger btn-sm" onclick="cancelReservation('${r.id}')">Cancelar</button>
+            ${actionsHtml}
           </div>
         </div>
       </div>
@@ -921,4 +982,19 @@ function exportAsignacionesCSV() {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+function startLiveClock() {
+  const clockEl = document.getElementById('clockTime');
+  if (!clockEl) return;
+
+  function update() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    clockEl.textContent = `${hours}:${minutes}:${seconds}`;
+  }
+  update();
+  setInterval(update, 1000);
 }

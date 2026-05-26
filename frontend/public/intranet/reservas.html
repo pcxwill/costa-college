@@ -7,6 +7,17 @@
   <title>Reservas — Intranet Costa College</title>
   <link rel="stylesheet" href="../styles/main.css">
   <link rel="stylesheet" href="../styles/intranet.css">
+  <style>
+    @keyframes pulse {
+      0% { opacity: 0.8; box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); }
+      70% { opacity: 1; box-shadow: 0 0 0 6px rgba(0, 123, 255, 0); }
+      100% { opacity: 0.8; box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+    }
+    .slot-occupied.slot-mine td {
+      color: var(--color-primary);
+      font-weight: 500;
+    }
+  </style>
 </head>
 
 <body>
@@ -26,6 +37,11 @@
           <a href="reservas.html" class="active">📅 Reservas</a>
           <a href="reservas.html" id="navAdmin" class="hidden">⚙️ Administración</a>
         </nav>
+      </div>
+      
+      <!-- Live Clock -->
+      <div class="dash-header-clock" id="liveClock" style="font-family: var(--font-body); font-weight: 600; color: var(--color-primary); background: rgba(0, 123, 255, 0.06); border: 1px solid rgba(0, 123, 255, 0.18); padding: 6px 14px; border-radius: 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); margin: 0 auto; user-select: none;">
+        🕒 <span id="clockTime" style="font-variant-numeric: tabular-nums;">--:--:--</span>
       </div>
       <div class="dash-user">
         <div class="dash-user-info">
@@ -219,7 +235,7 @@
 
           <!-- My Reservations -->
           <div class="reservas-list">
-            <h3>📋 Mis Reservas Activas</h3>
+            <h3>📋 Mis Reservas</h3>
             <div id="misReservas">
               <p class="text-muted">Cargando reservas...</p>
             </div>
