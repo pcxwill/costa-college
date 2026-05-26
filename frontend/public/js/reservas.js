@@ -51,6 +51,7 @@ async function initDashboard() {
 
   // Setup form
   setupReservationForm();
+  setupAsignarEquiposForm();
 
   // Setup admin tabs
   setupAdminTabs();
@@ -378,6 +379,25 @@ async function loadMyReservations() {
   }
 }
 
+function isBlockActive(reservaFecha, horarioStr) {
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+  if (reservaFecha !== todayStr) return false;
+
+  const parts = horarioStr.split('-');
+  if (parts.length !== 2) return false;
+  const [startStr, endStr] = parts.map(p => p.trim());
+
+  const [startH, startM] = startStr.split(':').map(Number);
+  const [endH, endM] = endStr.split(':').map(Number);
+
+  const currentMinutes = today.getHours() * 60 + today.getMinutes();
+  const startMinutes = startH * 60 + startM;
+  const endMinutes = endH * 60 + endM;
+
+  return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+}
+
 function renderMyReservations() {
   const container = document.getElementById('misReservas');
   if (misReservasData.length === 0) {
@@ -385,9 +405,17 @@ function renderMyReservations() {
     return;
   }
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const isDebugTest = urlParams.has('debug') || urlParams.has('test');
+
   const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   container.innerHTML = misReservasData.map(r => {
     const [y, m, d] = r.fecha.split('-');
+    const active = isBlockActive(r.fecha, r.bloque_horario) || isDebugTest;
+    const assignBtn = active ? `
+      <button class="btn btn-navy btn-sm" onclick="openAsignarModal('${r.id}', '${r.curso}', '${r.asignatura}', '${r.fecha}')" style="margin-right:4px;">Asignar Equipos</button>
+    ` : '';
+
     return `
       <div class="reserva-card">
         <div class="reserva-info">
@@ -400,9 +428,12 @@ function renderMyReservations() {
             <p>Bloque ${r.bloque} (${r.bloque_horario}) · ${r.curso} · ${r.asignatura} · ${r.actividad}</p>
           </div>
         </div>
-        <div class="reserva-meta">
+        <div class="reserva-meta" style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
           <span class="badge badge-success">Activa</span>
-          <button class="btn btn-danger btn-sm" onclick="cancelReservation('${r.id}')">Cancelar</button>
+          <div style="display:flex; gap:4px;">
+            ${assignBtn}
+            <button class="btn btn-danger btn-sm" onclick="cancelReservation('${r.id}')">Cancelar</button>
+          </div>
         </div>
       </div>
     `;
@@ -452,6 +483,7 @@ function setupAdminTabs() {
       document.getElementById(tab.dataset.tab).classList.add('active');
 
       if (tab.dataset.tab === 'tabUsuarios') loadUsers();
+      if (tab.dataset.tab === 'tabAsignaciones') loadAsignaciones();
     });
   });
 
@@ -706,3 +738,187 @@ window.addBloqueRow = function () {
   newRow.appendChild(removeBtn);
   container.appendChild(newRow);
 };
+
+// ── Asignaciones de Chromebooks Frontend ──────────────────────────────
+
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+}
+
+async function openAsignarModal(reservaId, curso, asignatura, fecha) {
+  document.getElementById('asignarReservaId').value = reservaId;
+  document.getElementById('asignarEquiposTitle').textContent = `Asignación de Chromebooks — ${curso}`;
+  document.getElementById('asignarEquiposDetails').textContent = `Clase: ${asignatura} · Fecha: ${fecha}`;
+
+  const tbody = document.getElementById('asignarEquiposTableBody');
+  tbody.innerHTML = '<tr><td colspan="2" class="text-center" style="padding:var(--space-4);">Cargando alumnos...</td></tr>';
+  openModal('asignarEquiposModal');
+
+  try {
+    // 1. Obtener listado de estudiantes del curso
+    const studentsRes = await fetch(`${API_URL}/estudiantes/${encodeURIComponent(curso)}`, {
+      headers: { 'Authorization': `Bearer ${sessionStorage.getItem('jwt')}` }
+    });
+    const studentsData = await studentsRes.json();
+    const alumnosList = studentsData.alumnos || [];
+
+    // 2. Obtener asignación previa de Chromebooks (si existe)
+    const assignRes = await fetch(`${API_URL}/asignaciones/reserva/${reservaId}`, {
+      headers: { 'Authorization': `Bearer ${sessionStorage.getItem('jwt')}` }
+    });
+    const assignData = await assignRes.json();
+    const existingAlumnos = assignData.asignacion ? assignData.asignacion.alumnos : [];
+
+    if (alumnosList.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted" style="padding:var(--space-4);">No hay alumnos registrados para este curso.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = alumnosList.map((nombre, index) => {
+      const existing = existingAlumnos.find(a => a.nombre === nombre);
+      const chromebookNum = existing ? existing.chromebook : '';
+      return `
+        <tr style="border-bottom: 1px solid var(--border-color);">
+          <td style="padding: var(--space-2) var(--space-3); font-size: 0.9rem; font-family: var(--font-body); color: var(--text-main);">${nombre}</td>
+          <td style="padding: var(--space-2) var(--space-3); text-align: center;">
+            <input type="number" name="chromebook_${index}" data-nombre="${nombre}" class="form-input" 
+                   value="${chromebookNum}" placeholder="--" min="1" max="100"
+                   style="width: 80px; text-align: center; padding: 4px; margin: 0 auto; display: block; height: 32px;">
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+  } catch (error) {
+    console.error('Error al abrir modal de asignaciones:', error);
+    tbody.innerHTML = '<tr><td colspan="2" class="text-center text-danger" style="padding:var(--space-4);">Error al cargar alumnos.</td></tr>';
+  }
+}
+
+function setupAsignarEquiposForm() {
+  const form = document.getElementById('asignarEquiposForm');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const reservaId = document.getElementById('asignarReservaId').value;
+    const tbody = document.getElementById('asignarEquiposTableBody');
+    const inputs = tbody.querySelectorAll('input[type="number"]');
+    const alumnos = [];
+
+    inputs.forEach(input => {
+      const nombre = input.dataset.nombre;
+      const chromebook = input.value.trim();
+      alumnos.push({ nombre, chromebook });
+    });
+
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = 'Guardando...';
+
+    try {
+      const res = await apiFetch('/asignaciones', {
+        method: 'POST',
+        body: JSON.stringify({ reserva_id: reservaId, alumnos })
+      });
+      if (res.ok) {
+        showToast('✅ Asignación guardada correctamente.', 'success');
+        closeModal('asignarEquiposModal');
+        const activeTab = document.querySelector('.admin-tab.active');
+        if (activeTab && activeTab.dataset.tab === 'tabAsignaciones') {
+          loadAsignaciones();
+        }
+      } else {
+        const data = await res.json();
+        showToast(data.error || 'Error al guardar asignación.', 'error');
+      }
+    } catch (error) {
+      showToast('Error de conexión con el servidor', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
+  });
+}
+
+async function loadAsignaciones() {
+  const tbody = document.getElementById('asignacionesTableBody');
+  tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted" style="padding:var(--space-6);">Cargando asignaciones...</td></tr>';
+  
+  try {
+    const res = await apiFetch('/admin/asignaciones');
+    if (!res.ok) throw new Error('Error al cargar asignaciones');
+    const data = await res.json();
+    window.asignacionesData = data.asignaciones || [];
+
+    if (window.asignacionesData.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted" style="padding:var(--space-8);">No hay asignaciones registradas</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = window.asignacionesData.map(a => {
+      const count = a.alumnos.filter(st => st.chromebook && st.chromebook.trim() !== '').length;
+      return `
+        <tr>
+          <td><strong>${a.fecha}</strong></td>
+          <td>Bloque ${a.bloque} (${a.bloque_horario})</td>
+          <td>${a.dependencia_nombre || a.dependencia_id}</td>
+          <td>${a.profesor_nombre}</td>
+          <td><span class="badge badge-info">${a.curso}</span></td>
+          <td>${a.asignatura}</td>
+          <td><strong style="color:var(--color-primary);">${count}</strong> / ${a.alumnos.length} asignados</td>
+          <td>
+            <button class="btn btn-navy btn-sm" onclick="verDetalleAsignacion('${a.reserva_id}')">Ver Detalle</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+  } catch (error) {
+    console.error(error);
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger" style="padding:var(--space-6);">Error al cargar datos de asignaciones.</td></tr>';
+  }
+}
+
+async function verDetalleAsignacion(reservaId) {
+  const asignacion = window.asignacionesData.find(a => a.reserva_id === reservaId);
+  if (!asignacion) return;
+  openAsignarModal(reservaId, asignacion.curso, asignacion.asignatura, asignacion.fecha);
+}
+
+function exportAsignacionesCSV() {
+  if (!window.asignacionesData || window.asignacionesData.length === 0) {
+    showToast('No hay datos para exportar', 'warning');
+    return;
+  }
+
+  let csvContent = '\uFEFF'; // UTF-8 BOM
+  csvContent += 'Fecha;Bloque;Horario;Dependencia;Profesor;Curso;Asignatura;Alumno;Chromebook\n';
+
+  window.asignacionesData.forEach(a => {
+    a.alumnos.forEach(alumno => {
+      const row = [
+        a.fecha,
+        `Bloque ${a.bloque}`,
+        a.bloque_horario,
+        a.dependencia_nombre || a.dependencia_id,
+        a.profesor_nombre,
+        a.curso,
+        a.asignatura,
+        alumno.nombre,
+        alumno.chromebook || ''
+      ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(';');
+      csvContent += row + '\n';
+    });
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `reporte_chromebooks_${new Date().toISOString().split('T')[0]}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}

@@ -15,6 +15,7 @@ const { initializeFirebase } = require('./config/firebase');
 const createAuthMiddleware = require('./middleware/auth');
 const createReservasController = require('./controllers/reservas.controller');
 const createAdminController = require('./controllers/admin.controller');
+const createAsignacionesController = require('./controllers/asignaciones.controller');
 const { iniciarCronLimpieza, ejecutarLimpiezaManual } = require('./cron/cleanup');
 const { BLOQUES_HORARIOS, DEPENDENCIAS } = require('./config/constants');
 
@@ -60,6 +61,7 @@ app.use('/api/', limiter);
 // ── Controladores ───────────────────────────────────────────────────
 const reservasCtrl = createReservasController(db);
 const adminCtrl = createAdminController(db, firebaseAuth, isMock);
+const asignacionesCtrl = createAsignacionesController(db);
 const authMiddleware = createAuthMiddleware(firebaseAuth, isMock);
 
 // ── Rutas Públicas ──────────────────────────────────────────────────
@@ -86,6 +88,11 @@ app.get('/api/reservas/semana', authMiddleware, reservasCtrl.vistaSemanal);
 app.post('/api/reservas', authMiddleware, reservasCtrl.crearReserva);
 app.delete('/api/reservas/:id', authMiddleware, reservasCtrl.cancelarReserva);
 
+// ── Rutas de Asignación de Chromebooks (requieren JWT) ──────────────
+app.get('/api/estudiantes/:curso', authMiddleware, asignacionesCtrl.obtenerEstudiantes);
+app.get('/api/asignaciones/reserva/:reservaId', authMiddleware, asignacionesCtrl.obtenerAsignacionPorReserva);
+app.post('/api/asignaciones', authMiddleware, asignacionesCtrl.guardarAsignacion);
+
 // ── Rutas de Administración (requieren JWT + rol admin) ─────────────
 app.get('/api/admin/usuarios', authMiddleware, adminCtrl.requireAdmin, adminCtrl.listarUsuarios);
 app.post('/api/admin/usuarios', authMiddleware, adminCtrl.requireAdmin, adminCtrl.crearUsuario);
@@ -94,6 +101,7 @@ app.delete('/api/admin/usuarios/:uid', authMiddleware, adminCtrl.requireAdmin, a
 app.delete('/api/admin/usuarios/:uid/permanente', authMiddleware, adminCtrl.requireAdmin, adminCtrl.eliminarUsuarioPermanente);
 app.delete('/api/admin/reservas/:id', authMiddleware, adminCtrl.requireAdmin, adminCtrl.eliminarReserva);
 app.get('/api/admin/estadisticas', authMiddleware, adminCtrl.requireAdmin, adminCtrl.estadisticas);
+app.get('/api/admin/asignaciones', authMiddleware, adminCtrl.requireAdmin, asignacionesCtrl.listarAsignaciones);
 
 // Limpieza manual (solo admin)
 app.post('/api/admin/limpieza', authMiddleware, adminCtrl.requireAdmin, async (req, res) => {

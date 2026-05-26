@@ -7,12 +7,12 @@
 const cron = require('node-cron');
 
 function iniciarCronLimpieza(db) {
-  // Ejecutar todos los domingos a las 23:59 hrs (hora del servidor)
+  // Ejecutar el primer día de cada mes a las 23:59 hrs
   // Formato cron: minuto hora dia_mes mes dia_semana
-  // '59 23 * * 0' = 23:59 todos los domingos (0 = domingo)
-  const job = cron.schedule('59 23 * * 0', async () => {
+  // '59 23 1 * *' = 23:59 el día 1 de cada mes
+  const job = cron.schedule('59 23 1 * *', async () => {
     console.log('[CRON] ========================================');
-    console.log('[CRON] Iniciando limpieza semanal de reservas...');
+    console.log('[CRON] Iniciando limpieza mensual de reservas...');
     console.log(`[CRON] Fecha de ejecución: ${new Date().toISOString()}`);
 
     try {
@@ -61,8 +61,7 @@ function iniciarCronLimpieza(db) {
   }, {
     timezone: 'America/Santiago' // Zona horaria de Chile
   });
-
-  console.log('[CRON] ✅ Job de limpieza programado: Domingos 23:59 hrs (America/Santiago)');
+  console.log('[CRON] ✅ Job de limpieza programado: Mensual - Día 1 a las 23:59 hrs (America/Santiago)');
 
   return job;
 }
