@@ -108,6 +108,7 @@ module.exports = function createReservasController(db) {
                 disponible: !reservaExistente,
                 reserva: reservaExistente
                   ? {
+                      id: reservaExistente.id,
                       profesor_uid: reservaExistente.profesor_uid,
                       profesor: reservaExistente.profesor_nombre,
                       curso: reservaExistente.curso,

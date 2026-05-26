@@ -286,12 +286,17 @@ function renderAvailability(data, filterDepId) {
 
         if (isMine) {
           row.className = 'slot-occupied slot-mine';
-          row.style.backgroundColor = 'rgba(0, 123, 255, 0.08)';
-          row.style.borderLeft = '4px solid var(--color-primary)';
+          row.style.backgroundColor = 'rgba(201, 168, 76, 0.12)';
+          row.style.borderLeft = '4px solid var(--gold)';
           row.innerHTML = `
             <td><strong>B${bloque.id}</strong></td>
             <td>${bloque.horario}</td>
-            <td><span class="badge" style="background-color: var(--color-primary); color: white;">Tu Reserva</span></td>
+            <td style="vertical-align: middle;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px 0;">
+                <span class="badge" style="background-color: var(--gold); color: white; margin: 0; font-size: 0.75rem; font-weight: 600;">Tu Reserva</span>
+                <button class="btn btn-danger btn-sm" onclick="cancelReservation('${r.id}')" style="padding: 2px 6px; font-size: 0.65rem; width: 100%; white-space: nowrap; line-height: 1.2;">Cancelar</button>
+              </div>
+            </td>
             <td><strong>${r.profesor}</strong></td>
             <td><strong>${r.curso}</strong></td>
             <td><strong>${r.asignatura}</strong></td>
