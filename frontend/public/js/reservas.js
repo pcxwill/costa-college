@@ -822,16 +822,12 @@ async function openAsignarModal(reservaId, curso, asignatura, fecha) {
 
   try {
     // 1. Obtener listado de estudiantes del curso
-    const studentsRes = await fetch(`${API_URL}/estudiantes/${encodeURIComponent(curso)}`, {
-      headers: { 'Authorization': `Bearer ${sessionStorage.getItem('jwt')}` }
-    });
+    const studentsRes = await apiFetch(`/estudiantes/${encodeURIComponent(curso)}`);
     const studentsData = await studentsRes.json();
     const alumnosList = studentsData.alumnos || [];
 
     // 2. Obtener asignación previa de Chromebooks (si existe)
-    const assignRes = await fetch(`${API_URL}/asignaciones/reserva/${reservaId}`, {
-      headers: { 'Authorization': `Bearer ${sessionStorage.getItem('jwt')}` }
-    });
+    const assignRes = await apiFetch(`/asignaciones/reserva/${reservaId}`);
     const assignData = await assignRes.json();
     const existingAlumnos = assignData.asignacion ? assignData.asignacion.alumnos : [];
 
