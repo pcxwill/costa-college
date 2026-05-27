@@ -751,36 +751,63 @@ async function deleteUserPermanent(uid) {
 }
 
 async function loadAllReservations() {
-  const fecha = document.getElementById('adminFiltroFecha').value;
-  const depId = document.getElementById('adminFiltroDep').value;
-  if (!fecha) { showToast('Seleccione una fecha', 'warning'); return; }
+  const tbody = document.getElementById('allReservasBody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Cargando todas las reservas...</td></tr>';
 
   try {
-    let url = `/reservas/todas?fecha_inicio=${fecha}&fecha_fin=${fecha}`;
-    if (depId) url += `&dependencia_id=${depId}`;
-    const res = await apiFetch(url);
+    const res = await apiFetch('/reservas/todas');
     const data = await res.json();
-    const tbody = document.getElementById('allReservasBody');
+    window.allReservasData = data.reservas || [];
+    filterAndRenderAllReservations();
+  } catch (e) {
+    showToast('Error cargando reservas', 'error');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error al cargar reservas</td></tr>';
+  }
+}
 
-    if (!data.reservas || data.reservas.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No hay reservas para esta fecha</td></tr>';
-      return;
-    }
+function filterAndRenderAllReservations() {
+  const fecha = document.getElementById('adminFiltroFecha').value;
+  const depId = document.getElementById('adminFiltroDep').value;
+  const profesor = document.getElementById('adminFiltroProfesor') ? document.getElementById('adminFiltroProfesor').value.toLowerCase().trim() : '';
+  const asignatura = document.getElementById('adminFiltroAsignatura') ? document.getElementById('adminFiltroAsignatura').value.toLowerCase().trim() : '';
 
-    tbody.innerHTML = data.reservas.map(r => `
+  const tbody = document.getElementById('allReservasBody');
+  if (!tbody) return;
+
+  if (!window.allReservasData || window.allReservasData.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No hay reservas registradas</td></tr>';
+    return;
+  }
+
+  const filtered = window.allReservasData.filter(r => {
+    if (fecha && r.fecha !== fecha) return false;
+    if (depId && r.dependencia_id !== depId) return false;
+    if (profesor && !(r.profesor_nombre || '').toLowerCase().includes(profesor)) return false;
+    if (asignatura && !(r.asignatura || '').toLowerCase().includes(asignatura)) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No se encontraron reservas con los filtros aplicados</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => {
+    const bText = r.bloques ? `Bloque ${r.bloques.join(', ')}` : `Bloque ${r.bloque}`;
+    return `
       <tr>
-        <td>${r.fecha}</td>
+        <td><strong>${r.fecha}</strong></td>
         <td>${r.dependencia_nombre || r.dependencia_id}</td>
-        <td>B${r.bloque}</td>
+        <td>${bText}</td>
         <td>${r.bloque_horario}</td>
         <td>${r.profesor_nombre}</td>
-        <td>${r.curso}</td>
+        <td><span class="badge badge-info">${r.curso}</span></td>
         <td>${r.asignatura}</td>
         <td>${r.actividad}</td>
         <td><button class="btn btn-danger btn-sm" onclick="adminDeleteReservation('${r.id}')">Eliminar</button></td>
       </tr>
-    `).join('');
-  } catch (e) { showToast('Error cargando reservas', 'error'); }
+    `;
+  }).join('');
 }
 
 async function adminDeleteReservation(id) {
@@ -1002,16 +1029,17 @@ async function loadAsignaciones() {
       }).join('');
 
       return `
-        <div class="day-group" style="margin-bottom: var(--space-6); background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow-sm);">
-          <div style="background: var(--bg-body); padding: var(--space-3) var(--space-4); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 8px;">
+        <div class="day-group" style="margin-bottom: var(--space-3); background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow-sm);">
+          <div style="background: var(--bg-body); padding: var(--space-3) var(--space-4); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); cursor: pointer; user-select: none;" 
+               onclick="toggleDayGroup('${dateStr}')">
             <h4 style="margin: 0; font-family: var(--font-body); font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 8px;">
-              📅 ${formattedDate}
+              <span id="day-arrow-${dateStr}" style="font-size: 0.75rem; transition: transform 0.2s; display: inline-block;">▶</span> 📅 ${formattedDate} <span style="font-weight: 500; font-size: 0.8rem; color: var(--text-muted); margin-left: 4px;">(${dayReservations.length} clase${dayReservations.length > 1 ? 's' : ''})</span>
             </h4>
-            <button class="btn btn-gold btn-sm" onclick="exportAsignacionesExcel('${dateStr}')" style="padding: 6px 12px; font-size: 0.8rem; font-weight:700; display:flex; align-items:center; gap:6px;">
-              📊 Descargar Excel del Día
+            <button class="btn btn-gold btn-sm" onclick="event.stopPropagation(); exportAsignacionesExcel('${dateStr}')" style="padding: 6px 12px; font-size: 0.8rem; font-weight:700; display:flex; align-items:center; gap:6px;">
+              📊 Excel del Día
             </button>
           </div>
-          <div style="overflow-x: auto;">
+          <div id="day-table-container-${dateStr}" style="display: none; overflow-x: auto; border-top: 1px solid var(--border-color);">
             <table class="data-table" style="margin: 0; width: 100%;">
               <thead>
                 <tr>
@@ -1176,6 +1204,27 @@ function exportAsignacionesCSV() {
   link.click();
   document.body.removeChild(link);
 }
+
+function toggleDayGroup(dateStr) {
+  const container = document.getElementById(`day-table-container-${dateStr}`);
+  const arrow = document.getElementById(`day-arrow-${dateStr}`);
+  if (container) {
+    if (container.style.display === 'none') {
+      container.style.display = 'block';
+      if (arrow) {
+        arrow.textContent = '▼';
+      }
+    } else {
+      container.style.display = 'none';
+      if (arrow) {
+        arrow.textContent = '▶';
+      }
+    }
+  }
+}
+
+window.toggleDayGroup = toggleDayGroup;
+window.filterAndRenderAllReservations = filterAndRenderAllReservations;
 
 function startLiveClock() {
   const clockEl = document.getElementById('clockTime');

@@ -20,16 +20,17 @@
       font-weight: 500;
     }
     .reservas-tabs {
-      background: var(--color-primary) !important;
-      border: none !important;
+      background: var(--white) !important;
+      border: 1px solid var(--gray-200) !important;
       padding: 4px !important;
+      border-radius: 20px !important;
     }
     .reservas-tab {
-      color: rgba(255, 255, 255, 0.75) !important;
+      color: var(--color-primary) !important;
       transition: all 0.2s ease;
     }
     .reservas-tab:hover {
-      color: var(--white) !important;
+      color: var(--gold) !important;
     }
     .reservas-tab.active {
       background: var(--gold) !important;
@@ -318,15 +319,23 @@
             style="display:flex; gap:var(--space-4); margin-bottom:var(--space-4); flex-wrap:wrap; align-items:flex-end;">
             <div class="form-group" style="margin:0;">
               <label class="form-label">Fecha</label>
-              <input type="date" id="adminFiltroFecha" class="form-input" style="width:180px;">
+              <input type="date" id="adminFiltroFecha" class="form-input" style="width:150px;" onchange="filterAndRenderAllReservations()">
             </div>
             <div class="form-group" style="margin:0;">
-              <label class="form-label">Dependencia</label>
-              <select id="adminFiltroDep" class="form-select" style="width:220px;">
+              <label class="form-label">Carro (Dependencia)</label>
+              <select id="adminFiltroDep" class="form-select" style="width:180px;" onchange="filterAndRenderAllReservations()">
                 <option value="">Todas</option>
               </select>
             </div>
-            <button class="btn btn-navy btn-sm" onclick="loadAllReservations()">Buscar</button>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Profesor</label>
+              <input type="text" id="adminFiltroProfesor" class="form-input" placeholder="Nombre de profesor..." style="width:180px;" oninput="filterAndRenderAllReservations()">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Asignatura</label>
+              <input type="text" id="adminFiltroAsignatura" class="form-input" placeholder="Asignatura..." style="width:150px;" oninput="filterAndRenderAllReservations()">
+            </div>
+            <button class="btn btn-navy btn-sm" onclick="loadAllReservations()">🔄 Recargar</button>
           </div>
           <table class="data-table" id="allReservasTable">
             <thead>
@@ -344,7 +353,7 @@
             </thead>
             <tbody id="allReservasBody">
               <tr>
-                <td colspan="9" class="text-center text-muted">Use los filtros para buscar reservas</td>
+                <td colspan="9" class="text-center text-muted">Cargando todas las reservas...</td>
               </tr>
             </tbody>
           </table>
