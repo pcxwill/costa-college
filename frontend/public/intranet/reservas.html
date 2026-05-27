@@ -7,6 +7,8 @@
   <title>Reservas — Intranet Costa College</title>
   <link rel="stylesheet" href="../styles/main.css">
   <link rel="stylesheet" href="../styles/intranet.css">
+  <!-- SheetJS para exportar archivos Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     @keyframes pulse {
       0% { opacity: 0.8; box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4); }
@@ -17,9 +19,22 @@
       color: var(--navy) !important;
       font-weight: 500;
     }
-    .reservas-tab.active {
+    .reservas-tabs {
       background: var(--color-primary) !important;
+      border: none !important;
+      padding: 4px !important;
+    }
+    .reservas-tab {
+      color: rgba(255, 255, 255, 0.75) !important;
+      transition: all 0.2s ease;
+    }
+    .reservas-tab:hover {
       color: var(--white) !important;
+    }
+    .reservas-tab.active {
+      background: var(--gold) !important;
+      color: var(--navy) !important;
+      font-weight: 700 !important;
     }
   </style>
 </head>
@@ -250,9 +265,9 @@
           <div class="reservas-list">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; gap: var(--space-2);">
               <h3 style="margin: 0;">📋 Mis Reservas</h3>
-              <div class="reservas-tabs" style="display: flex; gap: var(--space-1); background: var(--white); border-radius: 20px; padding: 4px; border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);">
-                <button class="reservas-tab active" id="tabReservasActivas" onclick="switchReservasTab('activas')" style="padding: 6px 16px; border-radius: 16px; font-size: 0.85rem; font-weight: 600; color: var(--gray-500); cursor: pointer; border: none; background: none; transition: all 0.2s; font-family: var(--font-body);">Activas</button>
-                <button class="reservas-tab" id="tabReservasPasadas" onclick="switchReservasTab('pasadas')" style="padding: 6px 16px; border-radius: 16px; font-size: 0.85rem; font-weight: 600; color: var(--gray-500); cursor: pointer; border: none; background: none; transition: all 0.2s; font-family: var(--font-body);">Pasadas</button>
+              <div class="reservas-tabs" style="display: flex; gap: var(--space-1); border-radius: 20px; box-shadow: var(--shadow-sm);">
+                <button class="reservas-tab active" id="tabReservasActivas" onclick="switchReservasTab('activas')" style="padding: 6px 16px; border-radius: 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; background: none; font-family: var(--font-body);">Activas</button>
+                <button class="reservas-tab" id="tabReservasPasadas" onclick="switchReservasTab('pasadas')" style="padding: 6px 16px; border-radius: 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; background: none; font-family: var(--font-body);">Pasadas</button>
               </div>
             </div>
             <div id="misReservas">
@@ -338,29 +353,11 @@
         <!-- Asignaciones Tab -->
         <div class="admin-section" id="tabAsignaciones">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-4);">
-            <h3 style="font-family:var(--font-body); font-weight:600;">Registro de Asignaciones de Chromebooks</h3>
-            <button class="btn btn-navy btn-sm" onclick="exportAsignacionesCSV()">📥 Descargar Reporte (CSV)</button>
+            <h3 style="font-family:var(--font-body); font-weight:600; margin:0;">Registro de Asignaciones de Chromebooks</h3>
+            <button class="btn btn-navy btn-sm" onclick="exportAsignacionesCSV()">📥 CSV General</button>
           </div>
-          <div style="overflow-x: auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius);">
-            <table class="data-table" id="asignacionesTable" style="margin: 0; width: 100%;">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Bloque</th>
-                  <th>Dependencia</th>
-                  <th>Profesor</th>
-                  <th>Curso</th>
-                  <th>Asignatura</th>
-                  <th>Equipos Asignados</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody id="asignacionesTableBody">
-                <tr>
-                  <td colspan="8" class="text-center text-muted" style="padding:var(--space-8);">Cargando asignaciones...</td>
-                </tr>
-              </tbody>
-            </table>
+          <div id="asignacionesGroupsContainer">
+            <p class="text-center text-muted" style="padding:var(--space-8);">Cargando asignaciones...</p>
           </div>
         </div>
 
@@ -496,6 +493,7 @@
             </tbody>
           </table>
         </div>
+        <p id="chromebookDuplicateError" style="display: none; color: var(--danger); font-size: 0.85rem; font-weight: 600; margin: 8px 0; text-align: right;">⚠️ Hay números de Chromebook duplicados.</p>
         <div style="display: flex; gap: var(--space-3); justify-content: flex-end;">
           <button type="button" class="btn btn-secondary" onclick="closeModal('asignarEquiposModal')" style="padding: var(--space-2) var(--space-4);">Cancelar</button>
           <button type="submit" class="btn btn-primary" style="padding: var(--space-2) var(--space-6);">Guardar Asignación</button>

@@ -108,6 +108,7 @@ module.exports = function createAsignacionesController(db) {
           reserva_id,
           fecha: reserva.fecha,
           bloque: reserva.bloque,
+          bloques: reserva.bloques || [reserva.bloque],
           bloque_horario: reserva.bloque_horario,
           dependencia_id: reserva.dependencia_id,
           dependencia_nombre: reserva.dependencia_nombre,

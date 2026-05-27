@@ -101,7 +101,7 @@ module.exports = function createReservasController(db) {
             ...dep,
             bloques: BLOQUES_HORARIOS.map((bloque) => {
               const reservaExistente = reservasDelDia.find(
-                (r) => r.dependencia_id === dep.id && r.bloque === bloque.id
+                (r) => r.dependencia_id === dep.id && (r.bloques ? r.bloques.includes(bloque.id) : r.bloque === bloque.id)
               );
               return {
                 ...bloque,
@@ -139,40 +139,57 @@ module.exports = function createReservasController(db) {
      */
     async crearReserva(req, res) {
       try {
-        const { fecha, bloque, dependencia_id, curso, asignatura, actividad } = req.body;
+        const { fecha, bloque, bloques, dependencia_id, curso, asignatura, actividad } = req.body;
 
         // 1. Validar datos de entrada
-        const validacion = validarReserva({ fecha, bloque, dependencia_id, curso, asignatura, actividad });
+        const validacion = validarReserva({ fecha, bloque, bloques, dependencia_id, curso, asignatura, actividad });
         if (!validacion.valido) {
           return res.status(400).json({ error: 'Datos inválidos', errores: validacion.errores });
         }
 
-        const bloqueNum = parseInt(bloque, 10);
+        const hasBloques = Array.isArray(bloques) && bloques.length > 0;
+        const bloquesArray = hasBloques ? bloques.map(Number) : [parseInt(bloque, 10)];
+        bloquesArray.sort((a, b) => a - b);
 
-        // 2. VALIDACIÓN DE COLISIÓN — ¿Existe ya una reserva para esta dependencia + fecha + bloque?
+        // 2. VALIDACIÓN DE COLISIÓN — Obtener reservas activas del día y dependencia
         const colisionSnapshot = await reservasCol
           .where('fecha', '==', fecha)
-          .where('bloque', '==', bloqueNum)
           .where('dependencia_id', '==', dependencia_id)
           .where('estado', '==', 'activa')
           .get();
 
-        if (!colisionSnapshot.empty) {
-          const reservaExistente = colisionSnapshot.docs[0].data();
+        const reservasExistentes = colisionSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const colision = reservasExistentes.find(r => {
+          const rBloques = r.bloques || [r.bloque];
+          return rBloques.some(b => bloquesArray.includes(b));
+        });
+
+        if (colision) {
           return res.status(409).json({
             error: 'Colisión de reserva',
-            message: `Este bloque ya fue reservado por ${reservaExistente.profesor_nombre} para ${reservaExistente.asignatura}.`,
+            message: `Uno o más bloques seleccionados ya fueron reservados por ${colision.profesor_nombre} para ${colision.asignatura}.`,
             reserva_existente: {
-              profesor: reservaExistente.profesor_nombre,
-              curso: reservaExistente.curso,
-              asignatura: reservaExistente.asignatura,
+              profesor: colision.profesor_nombre,
+              curso: colision.curso,
+              asignatura: colision.asignatura,
             },
           });
         }
 
-        // 3. Obtener datos de la dependencia y bloque
+        // 3. Obtener datos de la dependencia y bloques
         const dependencia = DEPENDENCIAS.find((d) => d.id === dependencia_id);
-        const bloqueInfo = BLOQUES_HORARIOS.find((b) => b.id === bloqueNum);
+        
+        let mergedHorario = '';
+        if (bloquesArray.length > 0) {
+          const firstInfo = BLOQUES_HORARIOS.find(b => b.id === bloquesArray[0]);
+          const lastInfo = BLOQUES_HORARIOS.find(b => b.id === bloquesArray[bloquesArray.length - 1]);
+          if (firstInfo && lastInfo) {
+            const start = firstInfo.horario.split('-')[0].trim();
+            const end = lastInfo.horario.split('-')[1].trim();
+            mergedHorario = `${start} - ${end}`;
+          }
+        }
 
         // 4. Crear la reserva
         const nuevaReserva = {
@@ -180,8 +197,9 @@ module.exports = function createReservasController(db) {
           profesor_nombre: req.user.nombre,
           profesor_email: req.user.email,
           fecha,
-          bloque: bloqueNum,
-          bloque_horario: bloqueInfo.horario,
+          bloque: bloquesArray[0], // compatibilidad hacia atrás (primer bloque)
+          bloques: bloquesArray,
+          bloque_horario: mergedHorario,
           dependencia_id,
           dependencia_nombre: dependencia.nombre,
           curso: curso.trim(),
@@ -194,7 +212,7 @@ module.exports = function createReservasController(db) {
 
         const docRef = await reservasCol.add(nuevaReserva);
 
-        console.log(`[Reservas] ✅ Nueva reserva ${docRef.id}: ${fecha} B${bloqueNum} ${dependencia.nombre} por ${req.user.nombre}`);
+        console.log(`[Reservas] ✅ Nueva reserva ${docRef.id}: ${fecha} B[${bloquesArray.join(',')}] ${dependencia.nombre} por ${req.user.nombre}`);
 
         res.status(201).json({
           message: 'Reserva creada exitosamente',

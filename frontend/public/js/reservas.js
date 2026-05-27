@@ -349,37 +349,25 @@ function setupReservationForm() {
     btn.disabled = true;
     btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto;"></div>';
 
-    let successCount = 0;
-    let errorMsgs = [];
-
     try {
-      await Promise.all(uniqueBloques.map(async (bloque) => {
-        const res = await apiFetch('/reservas', {
-          method: 'POST',
-          body: JSON.stringify({ fecha, bloque, dependencia_id, curso, asignatura, actividad })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          successCount++;
-        } else {
-          errorMsgs.push(`B${bloque}: ${data.message || data.error || 'Error'}`);
-        }
-      }));
+      const res = await apiFetch('/reservas', {
+        method: 'POST',
+        body: JSON.stringify({ fecha, bloques: uniqueBloques, dependencia_id, curso, asignatura, actividad })
+      });
+      const data = await res.json();
 
-      if (successCount > 0) {
-        showToast(`✅ ${successCount} bloque(s) reservado(s) exitosamente`, 'success');
+      if (res.ok) {
+        showToast('✅ Reserva realizada exitosamente', 'success');
         document.getElementById('reservaForm').reset();
 
-        // Remove extra block rows
+        // Eliminar filas de bloques adicionales
         document.querySelectorAll('.bloque-row:not(:first-child)').forEach(r => r.remove());
 
-        document.getElementById('formFecha').value = fecha; // Keep date
+        document.getElementById('formFecha').value = fecha; // Mantener la fecha
         await loadMyReservations();
         loadAvailability(fecha);
-      }
-
-      if (errorMsgs.length > 0) {
-        showToast('Errores: ' + errorMsgs.join(', '), 'error', 6000);
+      } else {
+        showToast(data.message || data.error || 'Error al realizar la reserva', 'error', 6000);
       }
     } catch (e) {
       showToast('Error de conexión con el servidor', 'error');
@@ -525,7 +513,7 @@ function renderMyReservations() {
           </div>
           <div class="reserva-details">
             <h4 style="${status === 'finalized' ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${r.dependencia_nombre || r.dependencia_id}</h4>
-            <p>Bloque ${r.bloque} (${r.bloque_horario}) · ${r.curso} · ${r.asignatura} · ${r.actividad}</p>
+            <p>Bloque ${r.bloques ? r.bloques.join(', ') : r.bloque} (${r.bloque_horario}) · ${r.curso} · ${r.asignatura} · ${r.actividad}</p>
           </div>
         </div>
         <div class="reserva-meta" style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
@@ -893,13 +881,17 @@ async function openAsignarModal(reservaId, curso, asignatura, fecha) {
         <tr style="border-bottom: 1px solid var(--border-color);">
           <td style="padding: var(--space-2) var(--space-3); font-size: 0.9rem; font-family: var(--font-body); color: var(--text-main);">${nombre}</td>
           <td style="padding: var(--space-2) var(--space-3); text-align: center;">
-            <input type="number" name="chromebook_${index}" data-nombre="${nombre}" class="form-input" 
+            <input type="number" name="chromebook_${index}" data-nombre="${nombre}" class="form-input chromebook-input" 
                    value="${chromebookNum}" placeholder="--" min="1" max="100"
-                   style="width: 80px; text-align: center; padding: 4px; margin: 0 auto; display: block; height: 32px;">
+                   style="width: 80px; text-align: center; padding: 4px; margin: 0 auto; display: block; height: 32px;"
+                   oninput="validateChromebookAssignments()">
           </td>
         </tr>
       `;
     }).join('');
+
+    // Validar asignaciones cargadas inicialmente
+    validateChromebookAssignments();
 
   } catch (error) {
     console.error('Error al abrir modal de asignaciones:', error);
@@ -955,8 +947,9 @@ function setupAsignarEquiposForm() {
 }
 
 async function loadAsignaciones() {
-  const tbody = document.getElementById('asignacionesTableBody');
-  tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted" style="padding:var(--space-6);">Cargando asignaciones...</td></tr>';
+  const container = document.getElementById('asignacionesGroupsContainer');
+  if (!container) return;
+  container.innerHTML = '<p class="text-center text-muted" style="padding:var(--space-6);">Cargando asignaciones...</p>';
   
   try {
     const res = await apiFetch('/admin/asignaciones');
@@ -965,31 +958,84 @@ async function loadAsignaciones() {
     window.asignacionesData = data.asignaciones || [];
 
     if (window.asignacionesData.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted" style="padding:var(--space-8);">No hay asignaciones registradas</td></tr>';
+      container.innerHTML = '<p class="text-center text-muted" style="padding:var(--space-8);">No hay asignaciones registradas</p>';
       return;
     }
 
-    tbody.innerHTML = window.asignacionesData.map(a => {
-      const count = a.alumnos.filter(st => st.chromebook && st.chromebook.trim() !== '').length;
+    // Group by date
+    const grouped = {};
+    window.asignacionesData.forEach(a => {
+      if (!grouped[a.fecha]) grouped[a.fecha] = [];
+      grouped[a.fecha].push(a);
+    });
+
+    // Sort dates descending
+    const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+    container.innerHTML = sortedDates.map(dateStr => {
+      // Parse date to a nice string e.g. "27 de Mayo, 2026"
+      const dateParts = dateStr.split('-');
+      let formattedDate = dateStr;
+      if (dateParts.length === 3) {
+        const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        formattedDate = `${parseInt(dateParts[2])} de ${months[parseInt(dateParts[1]) - 1]}, ${dateParts[0]}`;
+      }
+
+      const dayReservations = grouped[dateStr];
+
+      const tableRows = dayReservations.map(a => {
+        const count = a.alumnos.filter(st => st.chromebook && st.chromebook.trim() !== '').length;
+        const bText = a.bloques ? `Bloque ${a.bloques.join(', ')}` : `Bloque ${a.bloque}`;
+        return `
+          <tr>
+            <td><strong>${bText}</strong><br><small class="text-muted">${a.bloque_horario}</small></td>
+            <td>${a.dependencia_nombre || a.dependencia_id}</td>
+            <td>${a.profesor_nombre}</td>
+            <td><span class="badge badge-info">${a.curso}</span></td>
+            <td>${a.asignatura}</td>
+            <td><strong style="color:var(--color-primary);">${count}</strong> / ${a.alumnos.length} asignados</td>
+            <td>
+              <button class="btn btn-navy btn-sm" onclick="verDetalleAsignacion('${a.reserva_id}')">Detalle / Editar</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
       return `
-        <tr>
-          <td><strong>${a.fecha}</strong></td>
-          <td>Bloque ${a.bloque} (${a.bloque_horario})</td>
-          <td>${a.dependencia_nombre || a.dependencia_id}</td>
-          <td>${a.profesor_nombre}</td>
-          <td><span class="badge badge-info">${a.curso}</span></td>
-          <td>${a.asignatura}</td>
-          <td><strong style="color:var(--color-primary);">${count}</strong> / ${a.alumnos.length} asignados</td>
-          <td>
-            <button class="btn btn-navy btn-sm" onclick="verDetalleAsignacion('${a.reserva_id}')">Ver Detalle</button>
-          </td>
-        </tr>
+        <div class="day-group" style="margin-bottom: var(--space-6); background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow-sm);">
+          <div style="background: var(--bg-body); padding: var(--space-3) var(--space-4); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 8px;">
+            <h4 style="margin: 0; font-family: var(--font-body); font-weight: 700; color: var(--navy); display: flex; align-items: center; gap: 8px;">
+              📅 ${formattedDate}
+            </h4>
+            <button class="btn btn-gold btn-sm" onclick="exportAsignacionesExcel('${dateStr}')" style="padding: 6px 12px; font-size: 0.8rem; font-weight:700; display:flex; align-items:center; gap:6px;">
+              📊 Descargar Excel del Día
+            </button>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="data-table" style="margin: 0; width: 100%;">
+              <thead>
+                <tr>
+                  <th>Bloque</th>
+                  <th>Dependencia</th>
+                  <th>Profesor</th>
+                  <th>Curso</th>
+                  <th>Asignatura</th>
+                  <th>Equipos Asignados</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
       `;
     }).join('');
 
   } catch (error) {
     console.error(error);
-    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger" style="padding:var(--space-6);">Error al cargar datos de asignaciones.</td></tr>';
+    container.innerHTML = '<p class="text-center text-danger" style="padding:var(--space-6);">Error al cargar datos de asignaciones.</p>';
   }
 }
 
@@ -997,6 +1043,101 @@ async function verDetalleAsignacion(reservaId) {
   const asignacion = window.asignacionesData.find(a => a.reserva_id === reservaId);
   if (!asignacion) return;
   openAsignarModal(reservaId, asignacion.curso, asignacion.asignatura, asignacion.fecha);
+}
+
+function exportAsignacionesExcel(fecha) {
+  if (typeof XLSX === 'undefined') {
+    showToast('La biblioteca de Excel no se cargó correctamente', 'error');
+    return;
+  }
+
+  // Filtrar asignaciones para este día
+  const dayAssignments = window.asignacionesData.filter(a => a.fecha === fecha);
+  if (dayAssignments.length === 0) {
+    showToast('No hay asignaciones para esta fecha', 'warning');
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  dayAssignments.forEach(a => {
+    const bText = a.bloques ? `Bloque ${a.bloques.join(', ')}` : `Bloque ${a.bloque}`;
+    const sheetData = [
+      ["Detalles de la Reserva"],
+      ["Fecha", a.fecha],
+      ["Bloque", `${bText} (${a.bloque_horario})`],
+      ["Equipo/Dependencia", a.dependencia_nombre || a.dependencia_id],
+      ["Profesor", a.profesor_nombre],
+      ["Curso", a.curso],
+      ["Asignatura", a.asignatura],
+      [], 
+      ["Nombre del Alumno", "Nº Chromebook asignado"]
+    ];
+
+    a.alumnos.forEach(st => {
+      sheetData.push([st.nombre, st.chromebook || "—"]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+    // Formatear el nombre de la pestaña (max 31 chars)
+    let sheetName = `${a.curso}-${a.asignatura}`.replace(/[:\\/?*\[\]]/g, '').substring(0, 30);
+    
+    // Asegurar nombre único
+    let counter = 1;
+    let uniqueName = sheetName;
+    while (wb.SheetNames.includes(uniqueName)) {
+      uniqueName = `${sheetName.substring(0, 27)}-${counter++}`;
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, uniqueName);
+  });
+
+  XLSX.writeFile(wb, `Asignaciones-${fecha}.xlsx`);
+  showToast('📊 Archivo Excel generado con éxito', 'success');
+}
+
+function validateChromebookAssignments() {
+  const inputs = document.querySelectorAll('.chromebook-input');
+  const submitBtn = document.querySelector('#asignarEquiposForm button[type="submit"]');
+  const errorText = document.getElementById('chromebookDuplicateError');
+  
+  inputs.forEach(input => {
+    input.style.borderColor = '';
+    input.style.backgroundColor = '';
+  });
+  
+  const values = {};
+  let hasDuplicates = false;
+  
+  inputs.forEach(input => {
+    const val = input.value.trim();
+    if (val) {
+      if (values[val]) {
+        values[val].push(input);
+        hasDuplicates = true;
+      } else {
+        values[val] = [input];
+      }
+    }
+  });
+  
+  if (hasDuplicates) {
+    Object.keys(values).forEach(val => {
+      if (values[val].length > 1) {
+        values[val].forEach(input => {
+          input.style.borderColor = 'var(--danger)';
+          input.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
+        });
+      }
+    });
+    
+    if (errorText) errorText.style.display = 'block';
+    if (submitBtn) submitBtn.disabled = true;
+  } else {
+    if (errorText) errorText.style.display = 'none';
+    if (submitBtn) submitBtn.disabled = false;
+  }
 }
 
 function exportAsignacionesCSV() {
@@ -1009,10 +1150,11 @@ function exportAsignacionesCSV() {
   csvContent += 'Fecha;Bloque;Horario;Dependencia;Profesor;Curso;Asignatura;Alumno;Chromebook\n';
 
   window.asignacionesData.forEach(a => {
+    const bText = a.bloques ? `Bloque ${a.bloques.join(',')}` : `Bloque ${a.bloque}`;
     a.alumnos.forEach(alumno => {
       const row = [
         a.fecha,
-        `Bloque ${a.bloque}`,
+        bText,
         a.bloque_horario,
         a.dependencia_nombre || a.dependencia_id,
         a.profesor_nombre,

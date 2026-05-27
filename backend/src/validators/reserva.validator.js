@@ -8,11 +8,18 @@ function validarReserva(data) {
   const errores = [];
 
   // Campos requeridos
-  const camposRequeridos = ['fecha', 'bloque', 'dependencia_id', 'curso', 'asignatura', 'actividad'];
+  const hasBloques = Array.isArray(data.bloques) && data.bloques.length > 0;
+  const hasBloque = data.bloque !== undefined && data.bloque !== null && data.bloque !== '';
+
+  const camposRequeridos = ['fecha', 'dependencia_id', 'curso', 'asignatura', 'actividad'];
   for (const campo of camposRequeridos) {
     if (!data[campo] && data[campo] !== 0) {
       errores.push(`El campo '${campo}' es requerido.`);
     }
+  }
+
+  if (!hasBloque && !hasBloques) {
+    errores.push("Se requiere al menos un bloque horario ('bloque' o 'bloques').");
   }
 
   if (errores.length > 0) return { valido: false, errores };
@@ -46,9 +53,11 @@ function validarReserva(data) {
   }
 
   // Validar bloque horario
-  const bloque = parseInt(data.bloque, 10);
-  if (!BLOQUES_HORARIOS.find((b) => b.id === bloque)) {
-    errores.push(`Bloque horario '${data.bloque}' no es válido. Debe ser 1-8.`);
+  const bloquesArray = hasBloques ? data.bloques.map(Number) : [parseInt(data.bloque, 10)];
+  for (const bId of bloquesArray) {
+    if (!BLOQUES_HORARIOS.find((b) => b.id === bId)) {
+      errores.push(`Bloque horario '${bId}' no es válido. Debe ser 1-8.`);
+    }
   }
 
   // Validar dependencia
