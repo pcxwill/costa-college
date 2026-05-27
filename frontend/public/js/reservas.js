@@ -7,6 +7,7 @@ let CONFIG = { bloques_horarios: [], dependencias: [], ventana_agendamiento_mese
 let selectedDate = null;
 let selectedDependencia = null;
 let misReservasData = [];
+let activeReservasTab = 'activas';
 
 // ── Wait for auth then init ─────────────────────────────────────────
 const initInterval = setInterval(() => {
@@ -433,6 +434,9 @@ function renderMyReservations() {
   const container = document.getElementById('misReservas');
   if (misReservasData.length === 0) {
     container.innerHTML = '<p class="text-muted" style="padding:var(--space-4);">No tienes reservas.</p>';
+    // Esconder banner si no hay reservas
+    const activeClassBanner = document.getElementById('activeClassBanner');
+    if (activeClassBanner) activeClassBanner.style.display = 'none';
     return;
   }
 
@@ -441,8 +445,37 @@ function renderMyReservations() {
 
   const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
+  // Actualizar el banner de Clase en Curso en el header si hay alguna activa
+  const activeReserva = misReservasData.find(r => getReservationStatus(r.fecha, r.bloque_horario) === 'active');
+  const activeClassBanner = document.getElementById('activeClassBanner');
+  const activeClassText = document.getElementById('activeClassText');
+  if (activeClassBanner && activeClassText) {
+    if (activeReserva) {
+      activeClassText.textContent = `Clase en Curso: ${activeReserva.curso} · ${activeReserva.asignatura} (${activeReserva.dependencia_nombre || activeReserva.dependencia_id})`;
+      activeClassBanner.style.display = 'flex';
+    } else {
+      activeClassBanner.style.display = 'none';
+    }
+  }
+
+  // Filtrar según la pestaña activa
+  const filteredReservas = misReservasData.filter(r => {
+    const status = getReservationStatus(r.fecha, r.bloque_horario);
+    if (activeReservasTab === 'activas') {
+      return status === 'active' || status === 'upcoming';
+    } else {
+      return status === 'finalized';
+    }
+  });
+
+  if (filteredReservas.length === 0) {
+    const msg = activeReservasTab === 'activas' ? 'No tienes reservas activas.' : 'No tienes reservas pasadas.';
+    container.innerHTML = `<p class="text-muted" style="padding:var(--space-4);">${msg}</p>`;
+    return;
+  }
+
   // Ordenar reservas: En curso primero, Activas después, Finalizadas al último
-  const sortedReservas = [...misReservasData].sort((a, b) => {
+  const sortedReservas = [...filteredReservas].sort((a, b) => {
     const statusA = getReservationStatus(a.fecha, a.bloque_horario);
     const statusB = getReservationStatus(b.fecha, b.bloque_horario);
     const score = { 'active': 0, 'upcoming': 1, 'finalized': 2 };
@@ -504,6 +537,23 @@ function renderMyReservations() {
       </div>
     `;
   }).join('');
+}
+
+function switchReservasTab(tabType) {
+  activeReservasTab = tabType;
+  
+  const tabActivas = document.getElementById('tabReservasActivas');
+  const tabPasadas = document.getElementById('tabReservasPasadas');
+  
+  if (tabType === 'activas') {
+    tabActivas.classList.add('active');
+    tabPasadas.classList.remove('active');
+  } else {
+    tabActivas.classList.remove('active');
+    tabPasadas.classList.add('active');
+  }
+  
+  renderMyReservations();
 }
 
 async function cancelReservation(id) {
