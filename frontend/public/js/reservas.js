@@ -257,8 +257,8 @@ function renderAvailability(data, filterDepId) {
         `;
         row.addEventListener('click', () => {
           const fechaSel = document.getElementById('formFecha').value;
-          if (fechaSel <= todayStr()) {
-            showToast('Las reservas no pueden realizarse el mismo día.', 'warning');
+          if (fechaSel < todayStr()) {
+            showToast('Las reservas no pueden realizarse en fechas pasadas.', 'warning');
             return;
           }
 
@@ -284,6 +284,7 @@ function renderAvailability(data, filterDepId) {
       } else {
         const r = bloque.reserva;
         const isMine = r && currentUser && r.profesor_uid === currentUser.uid;
+        const isAdmin = userProfile && userProfile.rol === 'admin';
 
         if (isMine) {
           row.className = 'slot-occupied slot-mine';
@@ -303,8 +304,28 @@ function renderAvailability(data, filterDepId) {
             <td><strong>${r.asignatura}</strong></td>
             <td><strong>${r.actividad}</strong></td>
           `;
+        } else if (isAdmin) {
+          row.className = 'slot-occupied slot-admin-view';
+          row.style.backgroundColor = 'rgba(220, 53, 69, 0.05)';
+          row.style.borderLeft = '4px solid var(--danger)';
+          row.innerHTML = `
+            <td><strong>B${bloque.id}</strong></td>
+            <td>${bloque.horario}</td>
+            <td style="vertical-align: middle;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px 0;">
+                <span class="badge badge-danger" style="margin: 0; font-size: 0.75rem; font-weight: 600;">Ocupado</span>
+                <button class="btn btn-danger btn-sm" onclick="cancelReservation('${r ? r.id : ''}')" style="padding: 2px 6px; font-size: 0.65rem; width: 100%; white-space: nowrap; line-height: 1.2;">Anular (Admin)</button>
+              </div>
+            </td>
+            <td><strong>${r ? r.profesor : '—'}</strong></td>
+            <td><strong>${r ? r.curso : '—'}</strong></td>
+            <td><strong>${r ? r.asignatura : '—'}</strong></td>
+            <td><strong>${r ? r.actividad : '—'}</strong></td>
+          `;
         } else {
           row.className = 'slot-occupied';
+          row.style.backgroundColor = '';
+          row.style.borderLeft = '';
           row.innerHTML = `
             <td><strong>B${bloque.id}</strong></td>
             <td>${bloque.horario}</td>
@@ -338,8 +359,8 @@ function setupReservationForm() {
 
     if (!fecha) { showToast('Seleccione una fecha en el calendario', 'warning'); return; }
 
-    if (fecha <= todayStr()) {
-      showToast('No se pueden realizar reservas el mismo día', 'warning');
+    if (fecha < todayStr()) {
+      showToast('No se pueden realizar reservas en fechas pasadas', 'warning');
       return;
     }
 
