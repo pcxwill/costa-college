@@ -256,9 +256,11 @@ function renderAvailability(data, filterDepId) {
           <td>—</td><td>—</td><td>—</td><td>—</td>
         `;
         row.addEventListener('click', () => {
-          const fechaSel = document.getElementById('formFecha').value;
-          if (fechaSel < todayStr()) {
-            showToast('Las reservas no pueden realizarse en fechas pasadas.', 'warning');
+          const isAdmin = userProfile && userProfile.rol === 'admin';
+          const isInvalidDate = isAdmin ? (fechaSel < todayStr()) : (fechaSel <= todayStr());
+          if (isInvalidDate) {
+            const msg = isAdmin ? 'Las reservas no pueden realizarse en fechas pasadas.' : 'Las reservas no pueden realizarse el mismo día.';
+            showToast(msg, 'warning');
             return;
           }
 
@@ -359,8 +361,11 @@ function setupReservationForm() {
 
     if (!fecha) { showToast('Seleccione una fecha en el calendario', 'warning'); return; }
 
-    if (fecha < todayStr()) {
-      showToast('No se pueden realizar reservas en fechas pasadas', 'warning');
+    const isAdmin = userProfile && userProfile.rol === 'admin';
+    const isInvalidDate = isAdmin ? (fecha < todayStr()) : (fecha <= todayStr());
+    if (isInvalidDate) {
+      const msg = isAdmin ? 'No se pueden realizar reservas en fechas pasadas' : 'No se pueden realizar reservas el mismo día';
+      showToast(msg, 'warning');
       return;
     }
 

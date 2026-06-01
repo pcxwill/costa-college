@@ -147,6 +147,25 @@ module.exports = function createReservasController(db) {
           return res.status(400).json({ error: 'Datos inválidos', errores: validacion.errores });
         }
 
+        // Validar que solo administradores reserven para el mismo día (hoy)
+        const userDoc = await db.collection('users').doc(req.user.uid).get();
+        const userRol = userDoc.exists ? userDoc.data().rol : 'profesor';
+
+        const d = new Intl.DateTimeFormat('es-CL', {
+          timeZone: 'America/Santiago',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).formatToParts(new Date());
+        const day = d.find(p => p.type === 'day').value;
+        const month = d.find(p => p.type === 'month').value;
+        const year = d.find(p => p.type === 'year').value;
+        const chileToday = `${year}-${month}-${day}`;
+
+        if (fecha === chileToday && userRol !== 'admin') {
+          return res.status(403).json({ error: 'Solo los administradores pueden realizar reservas el mismo día.' });
+        }
+
         const hasBloques = Array.isArray(bloques) && bloques.length > 0;
         const bloquesArray = hasBloques ? bloques.map(Number) : [parseInt(bloque, 10)];
         bloquesArray.sort((a, b) => a - b);
