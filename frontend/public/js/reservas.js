@@ -4,8 +4,7 @@
  */
 
 function getCurrentDate() {
-  // Atrasar la hora en 3 horas para la presentación
-  return new Date(Date.now() - 3 * 60 * 60 * 1000);
+  return new Date();
 }
 
 let CONFIG = { bloques_horarios: [], dependencias: [], ventana_agendamiento_meses: 3 };
