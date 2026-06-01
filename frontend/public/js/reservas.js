@@ -3,6 +3,11 @@
  * Calendar, availability, reservation CRUD, admin panel
  */
 
+function getCurrentDate() {
+  // Atrasar la hora en 3 horas para la presentación
+  return new Date(Date.now() - 3 * 60 * 60 * 1000);
+}
+
 let CONFIG = { bloques_horarios: [], dependencias: [], ventana_agendamiento_meses: 3 };
 let selectedDate = null;
 let selectedDependencia = null;
@@ -96,7 +101,7 @@ async function loadConfig() {
 let calYear, calMonth;
 
 function initCalendar() {
-  const today = new Date();
+  const today = getCurrentDate();
   calYear = today.getFullYear();
   calMonth = today.getMonth();
   renderCalendar();
@@ -122,7 +127,7 @@ function renderCalendar() {
   const daysContainer = document.getElementById('calDays');
   daysContainer.innerHTML = '';
 
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const today = getCurrentDate(); today.setHours(0, 0, 0, 0);
   const maxDate = new Date(today);
   maxDate.setMonth(maxDate.getMonth() + CONFIG.ventana_agendamiento_meses);
 
@@ -418,7 +423,7 @@ async function loadMyReservations() {
 }
 
 function getReservationStatus(reservaFecha, horarioStr) {
-  const today = new Date();
+  const today = getCurrentDate();
   const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
   if (reservaFecha < todayStr) return 'finalized';
@@ -593,7 +598,7 @@ function updateStats() {
   document.getElementById('statHoy').textContent = misReservasData.filter(r => r.fecha === today).length;
 
   // This week
-  const now = new Date();
+  const now = getCurrentDate();
   const startOfWeek = new Date(now);
   startOfWeek.setDate(now.getDate() - now.getDay() + 1);
   const endOfWeek = new Date(startOfWeek);
@@ -861,7 +866,7 @@ function formatDate(date) {
   return `${y}-${m}-${d}`;
 }
 
-function todayStr() { return formatDate(new Date()); }
+function todayStr() { return formatDate(getCurrentDate()); }
 
 // Close modals on overlay click
 document.addEventListener('click', (e) => {
@@ -1257,7 +1262,7 @@ function startLiveClock() {
   if (!clockEl) return;
 
   function update() {
-    const now = new Date();
+    const now = getCurrentDate();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
