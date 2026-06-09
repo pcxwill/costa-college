@@ -57,7 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (menuToggle && mainNav) {
     menuToggle.addEventListener('click', () => {
       menuToggle.classList.toggle('active');
-      mainNav.classList.toggle('open');
+      const isOpen = mainNav.classList.toggle('open');
+      if (!isOpen) {
+        // Close all dropdowns when menu is closed
+        mainNav.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
+      }
     });
 
     // Close on link click
@@ -65,6 +69,29 @@ document.addEventListener('DOMContentLoaded', () => {
       link.addEventListener('click', () => {
         menuToggle.classList.remove('active');
         mainNav.classList.remove('open');
+        mainNav.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
+      });
+    });
+
+    // Toggle dropdowns on mobile click
+    const dropdowns = mainNav.querySelectorAll('.nav-dropdown');
+    dropdowns.forEach(dropdown => {
+      const link = dropdown.querySelector('a');
+      link.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const isOpen = dropdown.classList.contains('open');
+          
+          // Close other dropdowns
+          dropdowns.forEach(d => d.classList.remove('open'));
+          
+          // Open clicked one if it was closed
+          if (!isOpen) {
+            dropdown.classList.add('open');
+          }
+        }
       });
     });
   }
