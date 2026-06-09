@@ -4,21 +4,19 @@
 
 /* ── Header / Navigation ──────────────────────────────────────────── */
 .site-header {
-  position: fixed;
+  position: sticky;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(10, 22, 40, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
   transition: all var(--transition-base);
 }
 
 .site-header.scrolled {
-  background: rgba(10, 22, 40, 0.98);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  background: var(--white);
+  box-shadow: var(--shadow-md);
 }
 
 .header-inner {
@@ -66,9 +64,9 @@
 .main-nav { display: flex; align-items: center; gap: var(--space-1); }
 
 .main-nav a {
-  color: rgba(255,255,255,0.8);
+  color: var(--navy);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
@@ -77,8 +75,8 @@
 
 .main-nav a:hover,
 .main-nav a.active {
-  color: var(--white);
-  background: rgba(201, 168, 76, 0.15);
+  color: var(--gold-dark);
+  background: rgba(201, 168, 76, 0.08);
 }
 
 .nav-dropdown {
@@ -90,15 +88,15 @@
   top: 100%;
   left: 0;
   min-width: 220px;
-  background: var(--navy-light);
-  border: 1px solid rgba(201,168,76,0.15);
+  background: var(--white);
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-md);
   padding: var(--space-2);
   opacity: 0;
   visibility: hidden;
   transform: translateY(8px);
   transition: all var(--transition-base);
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-lg);
 }
 
 .nav-dropdown:hover .nav-dropdown-menu {
@@ -111,7 +109,13 @@
   display: block;
   padding: var(--space-2) var(--space-4);
   font-size: var(--text-sm);
+  color: var(--navy);
   border-radius: var(--radius-sm);
+}
+
+.nav-dropdown-menu a:hover {
+  background: var(--gray-100);
+  color: var(--gold-dark);
 }
 
 .nav-cta {
@@ -140,7 +144,7 @@
 .menu-toggle span {
   width: 24px;
   height: 2px;
-  background: var(--white);
+  background: var(--navy);
   transition: all var(--transition-base);
   border-radius: 2px;
 }
@@ -154,27 +158,45 @@
   background: var(--navy-dark);
   padding: var(--space-2) 0;
   border-bottom: 1px solid rgba(201,168,76,0.1);
+  display: flex;
+  align-items: center;
 }
 
 .quick-bar-inner {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: var(--space-6);
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 0 var(--space-6);
+  width: 100%;
 }
 
 .quick-bar a {
-  color: var(--gold);
+  color: rgba(255, 255, 255, 0.9);
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
-.quick-bar a:hover { color: var(--gold-light); }
+.quick-bar a:hover { color: var(--gold); }
+
+.quick-bar a.quick-cta {
+  background: var(--gold);
+  color: var(--white);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.quick-bar a.quick-cta:hover {
+  background: var(--gold-light);
+  color: var(--white);
+}
 
 /* ── Hero Section ─────────────────────────────────────────────────── */
 .hero {
@@ -899,8 +921,36 @@
     visibility: visible;
   }
   
-  .main-nav a { padding: var(--space-3) var(--space-4); width: 100%; }
-  .nav-dropdown-menu { position: static; opacity: 1; visibility: visible; transform: none; }
+  .main-nav a {
+    padding: var(--space-3) var(--space-4);
+    width: 100%;
+    color: var(--white);
+  }
+  
+  .main-nav a:hover,
+  .main-nav a.active {
+    color: var(--gold);
+    background: rgba(255, 255, 255, 0.08);
+  }
+  
+  .nav-dropdown-menu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    box-shadow: none;
+  }
+  
+  .nav-dropdown-menu a {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .nav-dropdown-menu a:hover {
+    color: var(--gold);
+    background: none;
+  }
   
   .hero h1 { font-size: var(--text-4xl); }
   .hero-content { padding: var(--space-16) var(--space-4); }
@@ -918,4 +968,46 @@
   .contact-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr; }
   .quick-bar { display: none; }
+}
+
+/* ── Floating WhatsApp Widget ─────────────────────────────────────── */
+.whatsapp-float {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  background-color: #25d366;
+  color: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  transition: all var(--transition-base);
+}
+
+.whatsapp-float:hover {
+  background-color: #20ba5a;
+  transform: scale(1.1);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.whatsapp-float svg {
+  width: 32px;
+  height: 32px;
+}
+
+@media (max-width: 768px) {
+  .whatsapp-float {
+    width: 50px;
+    height: 50px;
+    bottom: 16px;
+    right: 16px;
+  }
+  .whatsapp-float svg {
+    width: 26px;
+    height: 26px;
+  }
 }
