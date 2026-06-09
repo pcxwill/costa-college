@@ -1026,7 +1026,15 @@
   .docs-grid { grid-template-columns: 1fr; }
   .contact-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr; }
-  .quick-bar { display: none; }
+  .quick-bar {
+    display: flex;
+  }
+  
+  .quick-bar-inner {
+    justify-content: center;
+    gap: var(--space-4);
+    padding: 0 var(--space-3);
+  }
 }
 
 /* ── Floating WhatsApp Widget ─────────────────────────────────────── */
