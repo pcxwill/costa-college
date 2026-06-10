@@ -221,17 +221,22 @@
 
 .hero-intro {
   background: var(--navy-dark);
-  padding: var(--space-24) 0;
+  padding: var(--space-10) 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.hero-intro .hero-content {
+  max-width: 100%;
+  padding: 0 var(--space-6);
+}
+
 .hero-intro h1 {
-  font-size: var(--text-6xl);
+  font-size: var(--text-5xl);
   color: var(--white);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
   line-height: 1.1;
 }
 
