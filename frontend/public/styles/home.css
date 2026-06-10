@@ -219,6 +219,26 @@
   background: var(--navy);
 }
 
+.hero-intro {
+  background: var(--navy-dark);
+  padding: var(--space-24) 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hero-intro h1 {
+  font-size: var(--text-6xl);
+  color: var(--white);
+  margin-bottom: var(--space-6);
+  line-height: 1.1;
+}
+
+.hero-intro h1 span {
+  color: var(--gold);
+}
+
 .hero-slider {
   position: absolute;
   inset: 0;
@@ -1029,7 +1049,7 @@
     background: none;
   }
   
-  .hero h1 { font-size: var(--text-4xl); }
+  .hero h1, .hero-intro h1 { font-size: var(--text-4xl); }
   .hero-content { padding: var(--space-16) var(--space-4); }
   .hero-actions { flex-direction: column; }
   
