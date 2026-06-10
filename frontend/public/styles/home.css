@@ -548,6 +548,27 @@
   letter-spacing: 0.05em;
 }
 
+.certification-banner-wrapper {
+  margin-top: var(--space-16);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(10, 22, 40, 0.08);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.certification-banner-wrapper:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.certification-banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
 /* ── About / Mission Section ──────────────────────────────────────── */
 .section-about {
   padding: var(--space-24) 0;
