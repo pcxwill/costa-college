@@ -1,8 +1,126 @@
 /**
  * Costa College — Main App JavaScript
- * Handles: Hero slider, mobile menu, scroll animations, header scroll effect
+ * Handles: Dynamic header/footer loading, hero slider, mobile menu, scroll animations, header scroll effect
  */
-document.addEventListener('DOMContentLoaded', () => {
+
+// ── Dynamic Layout Loader ────────────────────────────────────────────
+async function loadLayout() {
+  const headerPlaceholder = document.getElementById('header-placeholder');
+  const footerPlaceholder = document.getElementById('footer-placeholder');
+
+  if (headerPlaceholder) {
+    let headerContent = '';
+    // Try to load from global variable first (for file:// protocol support without server)
+    if (typeof HEADER_HTML !== 'undefined') {
+      headerContent = HEADER_HTML;
+    } else {
+      try {
+        const res = await fetch('components/header.html');
+        if (res.ok) {
+          headerContent = await res.text();
+        }
+      } catch (err) {
+        console.error('Error cargando header via fetch:', err);
+      }
+    }
+
+    if (headerContent) {
+      headerPlaceholder.innerHTML = headerContent;
+      
+      // Dynamically highlight active menu link
+      const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+      const navLinks = headerPlaceholder.querySelectorAll('.main-nav > a, .main-nav .nav-dropdown > a');
+      
+      navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        // Match index.html or root path
+        if (href === currentPath) {
+          link.classList.add('active');
+        } else if ((currentPath === '' || currentPath === 'index.html') && href === 'index.html') {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+    }
+  }
+
+  if (footerPlaceholder) {
+    let footerContent = '';
+    // Try to load from global variable first (for file:// protocol support without server)
+    if (typeof FOOTER_HTML !== 'undefined') {
+      footerContent = FOOTER_HTML;
+    } else {
+      try {
+        const res = await fetch('components/footer.html');
+        if (res.ok) {
+          footerContent = await res.text();
+        }
+      } catch (err) {
+        console.error('Error cargando footer via fetch:', err);
+      }
+    }
+
+    if (footerContent) {
+      footerPlaceholder.innerHTML = footerContent;
+    }
+  }
+}
+
+// ── Header & Navigation Interactions ─────────────────────────────────
+function initHeaderInteractions() {
+  const menuToggle = document.getElementById('menuToggle');
+  const mainNav = document.getElementById('mainNav');
+
+  if (menuToggle && mainNav) {
+    menuToggle.addEventListener('click', () => {
+      menuToggle.classList.toggle('active');
+      const isOpen = mainNav.classList.toggle('open');
+      if (!isOpen) {
+        mainNav.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
+      }
+    });
+
+    mainNav.querySelectorAll('a:not(.nav-dropdown > a)').forEach(link => {
+      link.addEventListener('click', () => {
+        menuToggle.classList.remove('active');
+        mainNav.classList.remove('open');
+        mainNav.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
+      });
+    });
+
+    const dropdowns = mainNav.querySelectorAll('.nav-dropdown');
+    dropdowns.forEach(dropdown => {
+      const link = dropdown.querySelector('a');
+      link.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768) {
+          e.preventDefault();
+          e.stopPropagation();
+          const isOpen = dropdown.classList.contains('open');
+          dropdowns.forEach(d => d.classList.remove('open'));
+          if (!isOpen) {
+            dropdown.classList.add('open');
+          }
+        }
+      });
+    });
+  }
+
+  const header = document.getElementById('header');
+  if (header) {
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('scrolled', window.scrollY > 50);
+    }, { passive: true });
+  }
+}
+
+// ── Document Ready Handler ───────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  // 1. Load shared layouts
+  await loadLayout();
+  
+  // 2. Initialize layout dependencies
+  initHeaderInteractions();
 
   // ── Hero Slider ──────────────────────────────────────────────────
   const slides = document.querySelectorAll('.hero-slide');
@@ -50,60 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ── Mobile Menu ──────────────────────────────────────────────────
-  const menuToggle = document.getElementById('menuToggle');
-  const mainNav = document.getElementById('mainNav');
-
-  if (menuToggle && mainNav) {
-    menuToggle.addEventListener('click', () => {
-      menuToggle.classList.toggle('active');
-      const isOpen = mainNav.classList.toggle('open');
-      if (!isOpen) {
-        // Close all dropdowns when menu is closed
-        mainNav.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
-      }
-    });
-
-    // Close on link click
-    mainNav.querySelectorAll('a:not(.nav-dropdown > a)').forEach(link => {
-      link.addEventListener('click', () => {
-        menuToggle.classList.remove('active');
-        mainNav.classList.remove('open');
-        mainNav.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
-      });
-    });
-
-    // Toggle dropdowns on mobile click
-    const dropdowns = mainNav.querySelectorAll('.nav-dropdown');
-    dropdowns.forEach(dropdown => {
-      const link = dropdown.querySelector('a');
-      link.addEventListener('click', (e) => {
-        if (window.innerWidth <= 768) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          const isOpen = dropdown.classList.contains('open');
-          
-          // Close other dropdowns
-          dropdowns.forEach(d => d.classList.remove('open'));
-          
-          // Open clicked one if it was closed
-          if (!isOpen) {
-            dropdown.classList.add('open');
-          }
-        }
-      });
-    });
-  }
-
-  // ── Header Scroll Effect ────────────────────────────────────────
-  const header = document.getElementById('header');
-  if (header) {
-    window.addEventListener('scroll', () => {
-      header.classList.toggle('scrolled', window.scrollY > 50);
-    }, { passive: true });
-  }
-
   // ── Scroll Animations (Intersection Observer) ───────────────────
   const animElements = document.querySelectorAll('.animate-on-scroll');
   if (animElements.length > 0) {
@@ -121,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     animElements.forEach(el => observer.observe(el));
   }
 
-  // ── Smooth Scroll for Anchor Links ──────────────────────────────
+  // ── Smooth Scroll for Anchor Links (re-query dynamic layout) ──────
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', (e) => {
       const id = anchor.getAttribute('href');
@@ -159,3 +223,4 @@ function showToast(message, type = 'info', duration = 4000) {
     setTimeout(() => toast.remove(), 300);
   }, duration);
 }
+

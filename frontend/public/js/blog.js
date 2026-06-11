@@ -1,0 +1,474 @@
+/**
+ * Costa College — Blog & News Manager
+ * Handles: Dynamic loading, category filtering, reading modal, press login, and article administration.
+ */
+
+// Default Seed Articles
+const DEFAULT_NEWS = [
+  {
+    id: "diciembre-2025",
+    title: "Costa al Día — Edición Diciembre",
+    category: "comunidad",
+    date: "Diciembre 2025",
+    summary: "Resumen de las actividades y logros del último mes del año escolar.",
+    image: "assets/images/costa-al-dia.png",
+    isDefaultImage: true,
+    content: `
+      <p>Estimada comunidad de Costa College, nos complace presentar la última edición del año de nuestro boletín Costa al Día.</p>
+      <p>Diciembre ha sido un mes lleno de emociones, marcado por la finalización de los procesos académicos, las ceremonias de graduación de nuestros diferentes ciclos y las actividades de cierre de talleres artísticos y deportivos.</p>
+      <p>Queremos agradecer el esfuerzo constante de todos los alumnos, profesores y el apoyo de las familias que hicieron de este 2025 un año escolar excepcional. ¡Les deseamos unas felices y reparadoras vacaciones!</p>
+    `
+  },
+  {
+    id: "despedida-4to-medio",
+    title: "Despedida 4to Medio",
+    category: "comunidad",
+    date: "Noviembre 2025",
+    summary: "Especial despedida de nuestra generación de cuarto medio.",
+    image: "assets/images/costa-al-dia.png",
+    isDefaultImage: true,
+    content: `
+      <p>Con profunda emoción despedimos a nuestra Generación de Cuartos Medios 2025 en su tradicional ceremonia de Licenciatura.</p>
+      <p>El gimnasio del colegio se vistió de gala para recibir a estudiantes, apoderados y docentes en un acto solemne marcado por los discursos de despedida, las premiaciones académicas y de trayectoria de los alumnos, y el último pase de lista.</p>
+      <p>Costa College les desea el mayor de los éxitos en los nuevos rumbos que emprenderán en la educación superior. Recuerden llevar siempre en alto los valores de nuestra institución.</p>
+    `
+  },
+  {
+    id: "septiembre-2025",
+    title: "Costa al Día — Edición Septiembre",
+    category: "comunidad",
+    date: "Septiembre 2025",
+    summary: "Celebración de fiestas patrias y actividades del mes.",
+    image: "assets/images/costa-al-dia.png",
+    isDefaultImage: true,
+    content: `
+      <p>Septiembre llenó de colores y tradiciones los patios de Costa College. Celebramos las Fiestas Patrias con nuestra tradicional Gala Folclórica.</p>
+      <p>Estudiantes de todos los niveles deleitaron a los asistentes con bailes tradicionales de las distintas zonas de nuestro país. Además, se desarrollaron competencias de juegos típicos chilenos y compartimos una jornada de convivencia y alegría.</p>
+      <p>Felicitamos a los profesores de Educación Física y de Música por la excelente organización y preparación de los estudiantes.</p>
+    `
+  },
+  {
+    id: "robotica-senior",
+    title: "Proyecto de Robótica Destaca en Senior School",
+    category: "academico",
+    date: "Octubre 2025",
+    summary: "Nuestros estudiantes de enseñanza media diseñan soluciones de automatización en tecnología.",
+    image: "", // empty will fallback to default logo
+    isDefaultImage: true,
+    content: `
+      <p>Los alumnos de Senior School presentaron sus proyectos finales del electivo de Robótica y Programación.</p>
+      <p>Utilizando microcontroladores y programación en C++, los grupos desarrollaron prototipos funcionales orientados a la sustentabilidad, tales como sistemas de riego automatizado para los jardines del colegio y sensores de ahorro energético en salas de clase.</p>
+      <p>El profesor del área destacó la capacidad de innovación de los jóvenes y el alto nivel de resolución de problemas técnicos demostrado durante el semestre.</p>
+    `
+  },
+  {
+    id: "interescolar-atletismo",
+    title: "Gran Desempeño en Interescolar de Atletismo",
+    category: "deportes",
+    date: "Noviembre 2025",
+    summary: "Costa College obtiene múltiples medallas en la competencia regional.",
+    image: "", // empty
+    isDefaultImage: true,
+    content: `
+      <p>Nuestra delegación de atletismo tuvo una sobresaliente participación en el torneo interescolar celebrado el pasado fin de semana.</p>
+      <p>Destacamos el primer lugar obtenido en la posta 4x100 metros damas categoría intermedia, así como notables marcas individuales en salto largo y lanzamiento de bala.</p>
+      <p>Felicitamos a todos nuestros deportistas por representar con garra, disciplina y juego limpio los colores de Costa College.</p>
+    `
+  }
+];
+
+// State Manager
+let newsList = [];
+let currentFilter = "all";
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialize News Data
+  initNewsData();
+
+  // Initial Render
+  renderNewsGrid();
+  updateFilterButtons();
+
+  // Setup UI Listeners
+  setupEventListeners();
+
+  // Check Deep Linking (URL Query ?id=...)
+  checkDeepLink();
+
+  // Check login state
+  checkLoginState();
+});
+
+// Initialize News from LocalStorage or Seed Data
+function initNewsData() {
+  const storedNews = localStorage.getItem("costa_news");
+  if (!storedNews) {
+    localStorage.setItem("costa_news", JSON.stringify(DEFAULT_NEWS));
+    newsList = [...DEFAULT_NEWS];
+  } else {
+    newsList = JSON.parse(storedNews);
+  }
+}
+
+// Render the Main News Cards Grid
+function renderNewsGrid() {
+  const grid = document.getElementById("newsGrid");
+  if (!grid) return;
+
+  grid.innerHTML = "";
+
+  const filteredNews = newsList.filter(article => {
+    if (currentFilter === "all") return true;
+    return article.category === currentFilter;
+  });
+
+  if (filteredNews.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: var(--space-12) 0; color: rgba(255,255,255,0.4);">
+        <p style="font-size: var(--text-md);">No hay noticias disponibles en esta categoría.</p>
+      </div>
+    `;
+    return;
+  }
+
+  filteredNews.forEach(article => {
+    const card = document.createElement("a");
+    card.href = "#";
+    card.className = "news-card";
+    card.dataset.id = article.id;
+    
+    // Choose image source
+    const imgSrc = article.image || "assets/images/costa-al-dia.png";
+    const imgClass = article.isDefaultImage || !article.image ? "logo-contain" : "";
+
+    card.innerHTML = `
+      <div class="news-card-img">
+        <img src="${imgSrc}" class="${imgClass}" alt="${article.title}">
+      </div>
+      <div class="news-card-body">
+        <div class="news-card-date">${article.date}</div>
+        <h3>${article.title}</h3>
+        <p>${article.summary}</p>
+        <span class="news-card-link">Leer artículo completo →</span>
+      </div>
+    `;
+
+    card.addEventListener("click", (e) => {
+      e.preventDefault();
+      openArticleModal(article.id);
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+// Filter Navigation Setup
+function updateFilterButtons() {
+  const buttons = document.querySelectorAll(".filter-btn");
+  buttons.forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.filter === currentFilter);
+  });
+}
+
+function setupEventListeners() {
+  // Category Filters
+  const filterContainer = document.getElementById("filterContainer");
+  if (filterContainer) {
+    filterContainer.addEventListener("click", (e) => {
+      const btn = e.target.closest(".filter-btn");
+      if (btn) {
+        currentFilter = btn.dataset.filter;
+        updateFilterButtons();
+        renderNewsGrid();
+      }
+    });
+  }
+
+  // Modals close buttons
+  document.querySelectorAll(".modal-close, .modal-backdrop").forEach(element => {
+    element.addEventListener("click", (e) => {
+      // If backdrop is clicked, make sure it's the backdrop itself, not content
+      if (e.target.classList.contains("modal-backdrop") || e.target.closest(".modal-close")) {
+        closeAllModals();
+      }
+    });
+  });
+
+  // Prevent closing when clicking inside modal content
+  document.querySelectorAll(".modal-content").forEach(content => {
+    content.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+  });
+
+  // Login form submit
+  const loginForm = document.getElementById("pressLoginForm");
+  if (loginForm) {
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      handlePressLogin();
+    });
+  }
+
+  // Admin Create Article form submit
+  const createArticleForm = document.getElementById("createArticleForm");
+  if (createArticleForm) {
+    createArticleForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      handleCreateArticle();
+    });
+  }
+
+  // Logout button
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      handlePressLogout();
+    });
+  }
+
+  // Login Open button
+  const openLoginBtn = document.getElementById("openLoginBtn");
+  if (openLoginBtn) {
+    openLoginBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      openModal("loginModal");
+    });
+  }
+}
+
+// Modal actions
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden"; // Prevent background scroll
+  }
+}
+
+function closeAllModals() {
+  document.querySelectorAll(".modal-backdrop").forEach(modal => {
+    modal.classList.remove("open");
+  });
+  document.body.style.overflow = ""; // Restore scroll
+  
+  // Clean URL parameter when closing reading modal to prevent opening again on reload
+  const url = new URL(window.location);
+  url.searchParams.delete("id");
+  window.history.pushState({}, '', url);
+}
+
+// Open Article in Fluid Reading Modal
+function openArticleModal(id) {
+  const article = newsList.find(a => a.id === id);
+  if (!article) return;
+
+  const modalBody = document.getElementById("readingModalBody");
+  if (!modalBody) return;
+
+  const imgSrc = article.image || "assets/images/costa-al-dia.png";
+  const imgClass = article.isDefaultImage || !article.image ? "logo-contain" : "";
+
+  modalBody.innerHTML = `
+    <article>
+      <header class="article-header">
+        <div class="article-meta">
+          <span class="category-tag">${getFriendlyCategory(article.category)}</span>
+          <span>•</span>
+          <span>${article.date}</span>
+        </div>
+        <h1 class="article-title">${article.title}</h1>
+      </header>
+      <div class="article-image">
+        <img src="${imgSrc}" class="${imgClass}" alt="${article.title}">
+      </div>
+      <div class="article-text">
+        ${article.content}
+      </div>
+    </article>
+  `;
+
+  // Update URL for deep linking sharing
+  const url = new URL(window.location);
+  url.searchParams.set("id", id);
+  window.history.pushState({}, '', url);
+
+  openModal("readingModal");
+}
+
+function getFriendlyCategory(category) {
+  const categories = {
+    academico: "Académico",
+    deportes: "Deportes",
+    comunidad: "Comunidad"
+  };
+  return categories[category] || category;
+}
+
+// Deep Linking Check
+function checkDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  if (id) {
+    openArticleModal(id);
+  }
+}
+
+// Check if User is Press Writer
+function checkLoginState() {
+  const isLoggedIn = localStorage.getItem("press_logged_in") === "true";
+  const adminPanelSection = document.getElementById("adminPanelSection");
+  const openLoginWrapper = document.getElementById("openLoginWrapper");
+
+  if (isLoggedIn) {
+    if (adminPanelSection) adminPanelSection.style.display = "block";
+    if (openLoginWrapper) openLoginWrapper.style.display = "none";
+    renderAdminNewsList();
+  } else {
+    if (adminPanelSection) adminPanelSection.style.display = "none";
+    if (openLoginWrapper) openLoginWrapper.style.display = "block";
+  }
+}
+
+// Authenticate Press User
+function handlePressLogin() {
+  const usernameInput = document.getElementById("pressUsername");
+  const passwordInput = document.getElementById("pressPassword");
+
+  if (!usernameInput || !passwordInput) return;
+
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+
+  // Simple check for simulation
+  if (username === "prensa" && password === "costaprensa2026") {
+    localStorage.setItem("press_logged_in", "true");
+    checkLoginState();
+    closeAllModals();
+    
+    // Clear inputs
+    usernameInput.value = "";
+    passwordInput.value = "";
+    
+    if (typeof showToast === "function") {
+      showToast("Sesión iniciada correctamente como Prensa Costa College.", "success");
+    } else {
+      alert("Sesión iniciada correctamente.");
+    }
+  } else {
+    if (typeof showToast === "function") {
+      showToast("Credenciales incorrectas. Intente nuevamente.", "error");
+    } else {
+      alert("Credenciales incorrectas.");
+    }
+  }
+}
+
+// Logout Press User
+function handlePressLogout() {
+  localStorage.removeItem("press_logged_in");
+  checkLoginState();
+  if (typeof showToast === "function") {
+    showToast("Sesión de Prensa cerrada.", "info");
+  }
+}
+
+// Admin: Render News Lists to manage deletion
+function renderAdminNewsList() {
+  const listContainer = document.getElementById("adminNewsItems");
+  if (!listContainer) return;
+
+  listContainer.innerHTML = "";
+
+  newsList.forEach(article => {
+    const item = document.createElement("div");
+    item.className = "admin-news-item";
+    item.innerHTML = `
+      <div style="overflow: hidden; text-overflow: ellipsis; padding-right: var(--space-4);">
+        <h4>${article.title}</h4>
+        <span style="font-size: var(--text-xs); color: var(--gray-500);">${getFriendlyCategory(article.category)} | ${article.date}</span>
+      </div>
+      <button class="btn-danger" data-id="${article.id}">Eliminar</button>
+    `;
+
+    item.querySelector(".btn-danger").addEventListener("click", () => {
+      if (confirm(`¿Está seguro de que desea eliminar la noticia "${article.title}"?`)) {
+        handleDeleteArticle(article.id);
+      }
+    });
+
+    listContainer.appendChild(item);
+  });
+}
+
+// Admin: Create News Article
+function handleCreateArticle() {
+  const title = document.getElementById("artTitle").value.trim();
+  const category = document.getElementById("artCategory").value;
+  const summary = document.getElementById("artSummary").value.trim();
+  const image = document.getElementById("artImage").value.trim();
+  const contentRaw = document.getElementById("artContent").value.trim();
+
+  if (!title || !summary || !contentRaw) {
+    if (typeof showToast === "function") {
+      showToast("Por favor complete todos los campos obligatorios.", "error");
+    }
+    return;
+  }
+
+  // Build HTML Content from line breaks
+  const contentHTML = contentRaw
+    .split("\n\n")
+    .map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`)
+    .join("");
+
+  const today = new Date();
+  const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  const dateStr = `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+
+  // ID based on title slug
+  const id = title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .substring(0, 40) + "-" + Math.floor(Math.random() * 1000);
+
+  const newArticle = {
+    id,
+    title,
+    category,
+    date: dateStr,
+    summary,
+    image,
+    isDefaultImage: !image,
+    content: contentHTML
+  };
+
+  newsList.unshift(newArticle);
+  localStorage.setItem("costa_news", JSON.stringify(newsList));
+
+  // Reset Form
+  document.getElementById("createArticleForm").reset();
+
+  // Re-render
+  renderNewsGrid();
+  renderAdminNewsList();
+
+  if (typeof showToast === "function") {
+    showToast("Noticia publicada correctamente.", "success");
+  }
+}
+
+// Admin: Delete News Article
+function handleDeleteArticle(id) {
+  newsList = newsList.filter(article => article.id !== id);
+  localStorage.setItem("costa_news", JSON.stringify(newsList));
+  
+  // Re-render
+  renderNewsGrid();
+  renderAdminNewsList();
+
+  if (typeof showToast === "function") {
+    showToast("Noticia eliminada correctamente.", "info");
+  }
+}

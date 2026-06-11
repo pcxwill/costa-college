@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Costa al Día — Costa College Iquique</title>
+  <meta name="description" content="Canal de noticias oficiales y actividades de Costa College Iquique.">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/layout.css">
+  <link rel="stylesheet" href="styles/blog.css">
+  <link rel="icon" href="assets/images/logo.png" type="image/png">
+</head>
+
+<body>
+
+  <div id="header-placeholder"></div>
+
+  <!-- Blog Hero Section -->
+  <section class="blog-hero">
+    <div class="container">
+      <h1>Costa al Día</h1>
+      <p>Boletín informativo oficial y crónicas del Equipo de Prensa de Costa College</p>
+    </div>
+  </section>
+
+  <!-- Main Feed & Panels Content -->
+  <main class="blog-section">
+    <div class="container" style="padding-top: var(--space-8);">
+      
+      <!-- Admin Panel Section (Visible only when logged in) -->
+      <section class="admin-panel" id="adminPanelSection" style="display: none;">
+        <div class="admin-header">
+          <div class="admin-title">
+            <span>✍️</span> Panel de Prensa — Editor de Noticias
+          </div>
+          <button class="btn btn-outline-gold" id="logoutBtn" style="padding: var(--space-1.5) var(--space-4);">Cerrar Sesión</button>
+        </div>
+
+        <form id="createArticleForm" class="admin-form">
+          <div class="form-group">
+            <label for="artTitle">Título de la Noticia *</label>
+            <input type="text" id="artTitle" placeholder="Ej. Celebración Día del Alumno" required>
+          </div>
+          <div class="form-group">
+            <label for="artCategory">Categoría *</label>
+            <select id="artCategory" required>
+              <option value="comunidad">Comunidad</option>
+              <option value="academico">Académico</option>
+              <option value="deportes">Deportes</option>
+            </select>
+          </div>
+          <div class="form-group form-group-full">
+            <label for="artSummary">Resumen Corto * (Se muestra en la tarjeta de inicio/noticias)</label>
+            <input type="text" id="artSummary" placeholder="Ej. Una jornada llena de juegos, música y compañerismo en todos los niveles." required>
+          </div>
+          <div class="form-group form-group-full">
+            <label for="artImage">URL de la Imagen Banner (Opcional - Dejar vacío para usar Logo de Prensa)</label>
+            <input type="url" id="artImage" placeholder="Ej. https://url-de-tu-imagen.jpg">
+          </div>
+          <div class="form-group form-group-full">
+            <label for="artContent">Contenido del Artículo * (Usa doble salto de línea para separar párrafos)</label>
+            <textarea id="artContent" placeholder="Escribe el cuerpo de la noticia aquí..." required></textarea>
+          </div>
+          
+          <div class="admin-actions">
+            <button type="submit" class="btn nav-cta" style="padding: var(--space-2.5) var(--space-6);">Publicar Noticia</button>
+          </div>
+        </form>
+
+        <!-- Manage Existing Articles List -->
+        <div class="admin-news-list">
+          <h3>Administrar Publicaciones</h3>
+          <div id="adminNewsItems">
+            <!-- Dynamic Admin Items Rendered Here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Category Filter Tabs -->
+      <div class="filter-container" id="filterContainer">
+        <button class="filter-btn active" data-filter="all">Todas</button>
+        <button class="filter-btn" data-filter="academico">Académico</button>
+        <button class="filter-btn" data-filter="deportes">Deportes</button>
+        <button class="filter-btn" data-filter="comunidad">Comunidad</button>
+      </div>
+
+      <!-- Main News Cards Grid -->
+      <div class="news-grid" id="newsGrid">
+        <!-- Dynamic Cards Rendered Here by blog.js -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Bottom Press Login Trigger -->
+  <section class="press-access-footer">
+    <div class="container">
+      <p>¿Eres parte del Equipo de Prensa de Costa College?</p>
+      <div id="openLoginWrapper">
+        <a href="#" class="btn btn-outline-gold" id="openLoginBtn" style="padding: var(--space-2) var(--space-6); font-size: var(--text-xs);">Iniciar Sesión Prensa</a>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer-placeholder"></div>
+
+  <!-- Reading Modal Backdrop -->
+  <div class="modal-backdrop" id="readingModal">
+    <div class="modal-content">
+      <button class="modal-close" aria-label="Cerrar artículo">&times;</button>
+      <div class="modal-body" id="readingModalBody">
+        <!-- Filled dynamically by blog.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Modal Backdrop -->
+  <div class="modal-backdrop" id="loginModal">
+    <div class="modal-content" style="max-width: 400px;">
+      <button class="modal-close" aria-label="Cerrar login">&times;</button>
+      <div class="modal-body">
+        <div class="login-form-container">
+          <h2>Equipo de Prensa</h2>
+          <p style="font-size: var(--text-xs); color: var(--gray-500); margin-bottom: var(--space-4);">Inicia sesión para redactar y publicar noticias en el portal.</p>
+          <form id="pressLoginForm">
+            <div class="form-group" style="margin-bottom: var(--space-4);">
+              <label for="pressUsername">Usuario</label>
+              <input type="text" id="pressUsername" placeholder="Ej. prensa" required>
+            </div>
+            <div class="form-group" style="margin-bottom: var(--space-6);">
+              <label for="pressPassword">Contraseña</label>
+              <input type="password" id="pressPassword" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn nav-cta" style="width: 100%; padding: var(--space-3); border-radius: var(--radius-md);">Iniciar Sesión</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/blog.js"></script>
+</body>
+
+</html>
