@@ -86,9 +86,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize News Data
   initNewsData();
 
+  // Find latest month and set as initial filter
+  const availableMonths = getAvailableMonths();
+  if (availableMonths.length > 0) {
+    currentFilter = availableMonths[0].label;
+  } else {
+    currentFilter = "";
+  }
+
   // Initial Render
   renderNewsGrid();
-  updateFilterButtons();
+  renderFilterButtons();
 
   // Setup UI Listeners
   setupEventListeners();
@@ -119,14 +127,14 @@ function renderNewsGrid() {
   grid.innerHTML = "";
 
   const filteredNews = newsList.filter(article => {
-    if (currentFilter === "all") return true;
-    return article.category === currentFilter;
+    const { label } = getMonthAndYear(article.date);
+    return label === currentFilter;
   });
 
   if (filteredNews.length === 0) {
     grid.innerHTML = `
       <div style="grid-column: 1/-1; text-align: center; padding: var(--space-12) 0; color: rgba(255,255,255,0.4);">
-        <p style="font-size: var(--text-md);">No hay noticias disponibles en esta categoría.</p>
+        <p style="font-size: var(--text-md);">No hay noticias disponibles para este mes.</p>
       </div>
     `;
     return;
@@ -164,6 +172,62 @@ function renderNewsGrid() {
 }
 
 // Filter Navigation Setup
+function getMonthAndYear(dateStr) {
+  const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  const yearMatch = dateStr.match(/\d{4}/);
+  const year = yearMatch ? parseInt(yearMatch[0]) : new Date().getFullYear();
+  
+  let month = "";
+  for (const m of months) {
+    if (dateStr.toLowerCase().includes(m.toLowerCase())) {
+      month = m;
+      break;
+    }
+  }
+  if (!month) {
+    month = months[new Date().getMonth()];
+  }
+  return { month, year, label: `${month} ${year}` };
+}
+
+function getAvailableMonths() {
+  const monthsMap = {};
+  newsList.forEach(article => {
+    const { month, year, label } = getMonthAndYear(article.date);
+    const key = `${year}-${month}`;
+    monthsMap[key] = { month, year, label };
+  });
+
+  const monthOrder = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  return Object.values(monthsMap).sort((a, b) => {
+    if (a.year !== b.year) {
+      return b.year - a.year;
+    }
+    return monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month);
+  });
+}
+
+function renderFilterButtons() {
+  const container = document.getElementById("filterContainer");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const availableMonths = getAvailableMonths();
+  if (availableMonths.length === 0) return;
+
+  availableMonths.forEach(m => {
+    const btn = document.createElement("button");
+    btn.className = "filter-btn";
+    if (m.label === currentFilter) {
+      btn.classList.add("active");
+    }
+    btn.dataset.filter = m.label;
+    btn.textContent = m.label;
+    container.appendChild(btn);
+  });
+}
+
 function updateFilterButtons() {
   const buttons = document.querySelectorAll(".filter-btn");
   buttons.forEach(btn => {
@@ -267,6 +331,18 @@ function closeAllModals() {
   window.history.pushState({}, '', url);
 }
 
+// Helper to transform Drive PDF URL to embeddable URL
+function getEmbeddablePdfUrl(url) {
+  if (!url) return "";
+  if (url.includes("drive.google.com")) {
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+      return `https://drive.google.com/file/d/${match[1]}/preview`;
+    }
+  }
+  return url;
+}
+
 // Open Article in Fluid Reading Modal
 function openArticleModal(id) {
   const article = newsList.find(a => a.id === id);
@@ -277,6 +353,24 @@ function openArticleModal(id) {
 
   const imgSrc = article.image || "assets/images/costa-al-dia.png";
   const imgClass = article.isDefaultImage || !article.image ? "logo-contain" : "";
+
+  let pdfSectionHTML = "";
+  if (article.pdfUrl) {
+    const embedUrl = getEmbeddablePdfUrl(article.pdfUrl);
+    pdfSectionHTML = `
+      <div class="pdf-viewer-section" style="margin-top: var(--space-8); border-top: 1px solid var(--gray-200); padding-top: var(--space-6);">
+        <h3 style="font-family: var(--font-heading); margin-bottom: var(--space-4); color: var(--navy); font-size: var(--text-lg);">Documento Diario/Boletín PDF</h3>
+        <div class="pdf-viewer-container" style="position: relative; width: 100%; height: 600px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--gray-300); background: #f5f5f5; box-shadow: var(--shadow-sm);">
+          <iframe src="${embedUrl}" width="100%" height="100%" allow="autoplay" style="border: none;"></iframe>
+        </div>
+        <div style="margin-top: var(--space-4); text-align: center;">
+          <a href="${article.pdfUrl}" target="_blank" class="btn btn-outline-gold" style="padding: var(--space-2) var(--space-6); display: inline-flex; align-items: center; gap: var(--space-2); text-decoration: none; font-size: var(--text-sm);">
+            <span>📥</span> Abrir Documento en Nueva Pestaña
+          </a>
+        </div>
+      </div>
+    `;
+  }
 
   modalBody.innerHTML = `
     <article>
@@ -294,6 +388,7 @@ function openArticleModal(id) {
       <div class="article-text">
         ${article.content}
       </div>
+      ${pdfSectionHTML}
     </article>
   `;
 
@@ -441,6 +536,7 @@ function startEditArticle(id) {
   document.getElementById("artCategory").value = article.category;
   document.getElementById("artSummary").value = article.summary;
   document.getElementById("artImage").value = article.image || "";
+  document.getElementById("artPdfUrl").value = article.pdfUrl || "";
   document.getElementById("artContent").value = convertHTMLToRaw(article.content);
 
   // Update form header/title and action buttons
@@ -479,6 +575,7 @@ function handleCreateArticle() {
   const category = document.getElementById("artCategory").value;
   const summary = document.getElementById("artSummary").value.trim();
   const image = document.getElementById("artImage").value.trim();
+  const pdfUrl = document.getElementById("artPdfUrl").value.trim();
   const contentRaw = document.getElementById("artContent").value.trim();
 
   if (!title || !summary || !contentRaw) {
@@ -503,10 +600,15 @@ function handleCreateArticle() {
       newsList[articleIndex].category = category;
       newsList[articleIndex].summary = summary;
       newsList[articleIndex].image = image;
+      newsList[articleIndex].pdfUrl = pdfUrl;
       newsList[articleIndex].isDefaultImage = !image;
       newsList[articleIndex].content = contentHTML;
 
       localStorage.setItem("costa_news", JSON.stringify(newsList));
+
+      // Make sure the active filter is set to the edited article's month
+      const { label } = getMonthAndYear(newsList[articleIndex].date);
+      currentFilter = label;
 
       if (typeof showToast === "function") {
         showToast("Noticia actualizada correctamente.", "success");
@@ -533,12 +635,17 @@ function handleCreateArticle() {
       date: dateStr,
       summary,
       image,
+      pdfUrl,
       isDefaultImage: !image,
       content: contentHTML
     };
 
     newsList.unshift(newArticle);
     localStorage.setItem("costa_news", JSON.stringify(newsList));
+
+    // Set filter to the month of the new article (current month)
+    const { label } = getMonthAndYear(dateStr);
+    currentFilter = label;
 
     // Reset Form
     document.getElementById("createArticleForm").reset();
@@ -549,6 +656,7 @@ function handleCreateArticle() {
   }
 
   // Re-render
+  renderFilterButtons();
   renderNewsGrid();
   renderAdminNewsList();
 }
@@ -558,7 +666,19 @@ function handleDeleteArticle(id) {
   newsList = newsList.filter(article => article.id !== id);
   localStorage.setItem("costa_news", JSON.stringify(newsList));
   
+  // Re-evaluate filter if current one is now empty
+  const availableMonths = getAvailableMonths();
+  if (availableMonths.length > 0) {
+    const stillExists = availableMonths.some(m => m.label === currentFilter);
+    if (!stillExists) {
+      currentFilter = availableMonths[0].label;
+    }
+  } else {
+    currentFilter = "";
+  }
+
   // Re-render
+  renderFilterButtons();
   renderNewsGrid();
   renderAdminNewsList();
 

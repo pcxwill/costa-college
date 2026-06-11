@@ -59,6 +59,10 @@
             <input type="url" id="artImage" placeholder="Ej. https://url-de-tu-imagen.jpg">
           </div>
           <div class="form-group form-group-full">
+            <label for="artPdfUrl">Enlace de PDF / Google Drive (Opcional - Para mostrar diario o boletín en PDF)</label>
+            <input type="url" id="artPdfUrl" placeholder="Ej. https://drive.google.com/file/d/.../view?usp=sharing">
+          </div>
+          <div class="form-group form-group-full">
             <label for="artContent">Contenido del Artículo * (Usa doble salto de línea para separar párrafos)</label>
             <textarea id="artContent" placeholder="Escribe el cuerpo de la noticia aquí..." required></textarea>
           </div>
@@ -80,10 +84,7 @@
 
       <!-- Category Filter Tabs -->
       <div class="filter-container" id="filterContainer">
-        <button class="filter-btn active" data-filter="all">Todas</button>
-        <button class="filter-btn" data-filter="academico">Académico</button>
-        <button class="filter-btn" data-filter="deportes">Deportes</button>
-        <button class="filter-btn" data-filter="comunidad">Comunidad</button>
+        <!-- Dynamically populated by blog.js with Year/Month buttons -->
       </div>
 
       <!-- Main News Cards Grid -->
