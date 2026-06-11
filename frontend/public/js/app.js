@@ -122,6 +122,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 2. Initialize layout dependencies
   initHeaderInteractions();
 
+  // 3. Render featured news on home page
+  renderFeaturedNews();
+
   // ── Hero Slider ──────────────────────────────────────────────────
   const slides = document.querySelectorAll('.hero-slide');
   const dots = document.querySelectorAll('.hero-dot');
@@ -202,6 +205,100 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 });
+
+// ── Render Featured News ─────────────────────────────────────────────
+function renderFeaturedNews() {
+  const grid = document.getElementById("featuredNewsGrid");
+  if (!grid) return;
+
+  const storedNews = localStorage.getItem("costa_news");
+  let newsList = [];
+  if (!storedNews) {
+    // Default seed
+    const defaultNews = [
+      {
+        id: "diciembre-2025",
+        title: "Costa al Día — Edición Diciembre",
+        category: "comunidad",
+        date: "15 de Diciembre del 2025",
+        summary: "Resumen de las actividades y logros del último mes del año escolar.",
+        image: "assets/images/costa-al-dia.png",
+        isDefaultImage: true,
+        content: "<p>Estimada comunidad de Costa College, nos complace presentar la última edición del año de nuestro boletín Costa al Día.</p><p>Diciembre ha sido un mes lleno de emociones, marcado por la finalización de los procesos académicos, las ceremonias de graduación de nuestros diferentes ciclos y las actividades de cierre de talleres artísticos y deportivos.</p><p>Queremos agradecer el esfuerzo constante de todos los alumnos, profesores y el apoyo de las familias que hicieron de este 2025 un año escolar excepcional. ¡Les deseamos unas felices y reparadoras vacaciones!</p>"
+      },
+      {
+        id: "despedida-4to-medio",
+        title: "Despedida 4to Medio",
+        category: "comunidad",
+        date: "20 de Noviembre del 2025",
+        summary: "Especial despedida de nuestra generación de cuarto medio.",
+        image: "assets/images/costa-al-dia.png",
+        isDefaultImage: true,
+        content: "<p>Con profunda emoción despedimos a nuestra Generación de Cuartos Medios 2025 en su tradicional ceremonia de Licenciatura.</p><p>El gimnasio del colegio se vistió de gala para recibir a estudiantes, apoderados y docentes en un acto solemne marcado por los discursos de despedida, las premiaciones académicas y de trayectoria de los alumnos, y el último pase de lista.</p><p>Costa College les desea el mayor de los éxitos en los nuevos rumbos que emprenderán en la educación superior. Recuerden llevar siempre en alto los valores de nuestra institución.</p>"
+      },
+      {
+        id: "septiembre-2025",
+        title: "Costa al Día — Edición Septiembre",
+        category: "comunidad",
+        date: "10 de Septiembre del 2025",
+        summary: "Celebración de fiestas patrias y actividades del mes.",
+        image: "assets/images/costa-al-dia.png",
+        isDefaultImage: true,
+        content: "<p>Septiembre llenó de colores y tradiciones los patios de Costa College. Celebramos las Fiestas Patrias con nuestra tradicional Gala Folclórica.</p><p>Estudiantes de todos los niveles deleitaron a los asistentes con bailes tradicionales de las distintas zonas de nuestro país. Además, se desarrollaron competencias de juegos típicos chilenos y compartimos una jornada de convivencia y alegría.</p><p>Felicitamos a los profesores de Educación Física y de Música por la excelente organización y preparación de los estudiantes.</p>"
+      },
+      {
+        id: "robotica-senior",
+        title: "Proyecto de Robótica Destaca en Senior School",
+        category: "academico",
+        date: "25 de Octubre del 2025",
+        summary: "Nuestros estudiantes de enseñanza media diseñan soluciones de automatización en tecnología.",
+        image: "",
+        isDefaultImage: true,
+        content: "<p>Los alumnos de Senior School presentaron sus proyectos finales del electivo de Robótica y Programación.</p><p>Utilizando microcontroladores y programación en C++, los grupos desarrollaron prototipos funcionales orientados a la sustentabilidad, tales como sistemas de riego automatizado para los jardines del colegio y sensores de ahorro energético en salas de clase.</p><p>El profesor del área destacó la capacidad de innovación de los jóvenes y el alto nivel de resolución de problemas técnicos demostrado durante el semestre.</p>"
+      },
+      {
+        id: "interescolar-atletismo",
+        title: "Gran Desempeño en Interescolar de Atletismo",
+        category: "deportes",
+        date: "18 de Noviembre del 2025",
+        summary: "Costa College obtiene múltiples medallas en la competencia regional.",
+        image: "",
+        isDefaultImage: true,
+        content: "<p>Nuestra delegación de atletismo tuvo una sobresaliente participación en el torneo interescolar celebrado el pasado fin de semana.</p><p>Destacamos el primer lugar obtenido en la posta 4x100 metros damas categoría intermedia, así como notables marcas individuales en salto largo y lanzamiento de bala.</p><p>Felicitamos a todos nuestros deportistas por representar con garra, disciplina y juego limpio los colores de Costa College.</p>"
+      }
+    ];
+    localStorage.setItem("costa_news", JSON.stringify(defaultNews));
+    newsList = defaultNews;
+  } else {
+    newsList = JSON.parse(storedNews);
+  }
+
+  // Display only the first 3 news items
+  const featured = newsList.slice(0, 3);
+  grid.innerHTML = "";
+
+  featured.forEach(article => {
+    const card = document.createElement("a");
+    card.href = `noticias.html?id=${article.id}`;
+    card.className = "news-card animate-on-scroll";
+    
+    const imgSrc = article.image || "assets/images/costa-al-dia.png";
+    const imgClass = article.isDefaultImage || !article.image ? "logo-contain" : "";
+
+    card.innerHTML = `
+      <div class="news-card-img">
+        <img src="${imgSrc}" class="${imgClass}" alt="${article.title}">
+      </div>
+      <div class="news-card-body">
+        <div class="news-card-date">${article.date}</div>
+        <h3>${article.title}</h3>
+        <p>${article.summary}</p>
+        <span class="news-card-link">Leer más →</span>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
 
 // ── Toast Notification System ───────────────────────────────────────
 function showToast(message, type = 'info', duration = 4000) {

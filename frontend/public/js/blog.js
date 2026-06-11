@@ -9,7 +9,7 @@ const DEFAULT_NEWS = [
     id: "diciembre-2025",
     title: "Costa al Día — Edición Diciembre",
     category: "comunidad",
-    date: "Diciembre 2025",
+    date: "15 de Diciembre del 2025",
     summary: "Resumen de las actividades y logros del último mes del año escolar.",
     image: "assets/images/costa-al-dia.png",
     isDefaultImage: true,
@@ -23,7 +23,7 @@ const DEFAULT_NEWS = [
     id: "despedida-4to-medio",
     title: "Despedida 4to Medio",
     category: "comunidad",
-    date: "Noviembre 2025",
+    date: "20 de Noviembre del 2025",
     summary: "Especial despedida de nuestra generación de cuarto medio.",
     image: "assets/images/costa-al-dia.png",
     isDefaultImage: true,
@@ -37,7 +37,7 @@ const DEFAULT_NEWS = [
     id: "septiembre-2025",
     title: "Costa al Día — Edición Septiembre",
     category: "comunidad",
-    date: "Septiembre 2025",
+    date: "10 de Septiembre del 2025",
     summary: "Celebración de fiestas patrias y actividades del mes.",
     image: "assets/images/costa-al-dia.png",
     isDefaultImage: true,
@@ -51,7 +51,7 @@ const DEFAULT_NEWS = [
     id: "robotica-senior",
     title: "Proyecto de Robótica Destaca en Senior School",
     category: "academico",
-    date: "Octubre 2025",
+    date: "25 de Octubre del 2025",
     summary: "Nuestros estudiantes de enseñanza media diseñan soluciones de automatización en tecnología.",
     image: "", // empty will fallback to default logo
     isDefaultImage: true,
@@ -65,7 +65,7 @@ const DEFAULT_NEWS = [
     id: "interescolar-atletismo",
     title: "Gran Desempeño en Interescolar de Atletismo",
     category: "deportes",
-    date: "Noviembre 2025",
+    date: "18 de Noviembre del 2025",
     summary: "Costa College obtiene múltiples medallas en la competencia regional.",
     image: "", // empty
     isDefaultImage: true,
@@ -80,6 +80,7 @@ const DEFAULT_NEWS = [
 // State Manager
 let newsList = [];
 let currentFilter = "all";
+let editingArticleId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize News Data
@@ -219,6 +220,14 @@ function setupEventListeners() {
     });
   }
 
+  // Cancel Edit button
+  const cancelEditBtn = document.getElementById("cancelEditBtn");
+  if (cancelEditBtn) {
+    cancelEditBtn.addEventListener("click", () => {
+      cancelEdit();
+    });
+  }
+
   // Logout button
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
@@ -341,7 +350,10 @@ function handlePressLogin() {
   const password = passwordInput.value;
 
   // Simple check for simulation
-  if (username === "prensa" && password === "costaprensa2026") {
+  if (
+    (username === "prensa" && password === "costaprensa2026") ||
+    (username === "soporte" && password === "costasoporte2026")
+  ) {
     localStorage.setItem("press_logged_in", "true");
     checkLoginState();
     closeAllModals();
@@ -351,7 +363,7 @@ function handlePressLogin() {
     passwordInput.value = "";
     
     if (typeof showToast === "function") {
-      showToast("Sesión iniciada correctamente como Prensa Costa College.", "success");
+      showToast("Sesión iniciada correctamente como Administración de Prensa.", "success");
     } else {
       alert("Sesión iniciada correctamente.");
     }
@@ -373,7 +385,7 @@ function handlePressLogout() {
   }
 }
 
-// Admin: Render News Lists to manage deletion
+// Admin: Render News Lists to manage deletion and editing
 function renderAdminNewsList() {
   const listContainer = document.getElementById("adminNewsItems");
   if (!listContainer) return;
@@ -384,12 +396,19 @@ function renderAdminNewsList() {
     const item = document.createElement("div");
     item.className = "admin-news-item";
     item.innerHTML = `
-      <div style="overflow: hidden; text-overflow: ellipsis; padding-right: var(--space-4);">
+      <div style="overflow: hidden; text-overflow: ellipsis; padding-right: var(--space-4); flex-grow: 1;">
         <h4>${article.title}</h4>
         <span style="font-size: var(--text-xs); color: var(--gray-500);">${getFriendlyCategory(article.category)} | ${article.date}</span>
       </div>
-      <button class="btn-danger" data-id="${article.id}">Eliminar</button>
+      <div style="display: flex; gap: var(--space-2); flex-shrink: 0;">
+        <button class="btn-edit" data-id="${article.id}" style="background: var(--navy); color: var(--gold); border: 1px solid var(--gold); padding: var(--space-1.5) var(--space-3); border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: 600; cursor: pointer; transition: all var(--transition-fast);">Editar</button>
+        <button class="btn-danger" data-id="${article.id}">Eliminar</button>
+      </div>
     `;
+
+    item.querySelector(".btn-edit").addEventListener("click", () => {
+      startEditArticle(article.id);
+    });
 
     item.querySelector(".btn-danger").addEventListener("click", () => {
       if (confirm(`¿Está seguro de que desea eliminar la noticia "${article.title}"?`)) {
@@ -401,7 +420,60 @@ function renderAdminNewsList() {
   });
 }
 
-// Admin: Create News Article
+// Admin: Helper to convert HTML back to raw text for textarea
+function convertHTMLToRaw(html) {
+  let text = html;
+  text = text.replace(/<\/p>\s*<p>/gi, "\n\n");
+  text = text.replace(/<br\s*\/?>/gi, "\n");
+  text = text.replace(/<p>/gi, "").replace(/<\/p>/gi, "");
+  return text.trim();
+}
+
+// Admin: Start Edit Mode
+function startEditArticle(id) {
+  const article = newsList.find(a => a.id === id);
+  if (!article) return;
+
+  editingArticleId = id;
+
+  // Populate form fields
+  document.getElementById("artTitle").value = article.title;
+  document.getElementById("artCategory").value = article.category;
+  document.getElementById("artSummary").value = article.summary;
+  document.getElementById("artImage").value = article.image || "";
+  document.getElementById("artContent").value = convertHTMLToRaw(article.content);
+
+  // Update form header/title and action buttons
+  const submitBtn = document.getElementById("submitArticleBtn");
+  if (submitBtn) submitBtn.textContent = "Guardar Cambios";
+
+  const cancelBtn = document.getElementById("cancelEditBtn");
+  if (cancelBtn) cancelBtn.style.display = "inline-block";
+
+  // Scroll to the form
+  const formElement = document.getElementById("adminPanelSection");
+  if (formElement) {
+    formElement.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+// Admin: Cancel Edit Mode
+function cancelEdit() {
+  editingArticleId = null;
+
+  // Reset form
+  const form = document.getElementById("createArticleForm");
+  if (form) form.reset();
+
+  // Reset action buttons
+  const submitBtn = document.getElementById("submitArticleBtn");
+  if (submitBtn) submitBtn.textContent = "Publicar Noticia";
+
+  const cancelBtn = document.getElementById("cancelEditBtn");
+  if (cancelBtn) cancelBtn.style.display = "none";
+}
+
+// Admin: Create or Edit News Article
 function handleCreateArticle() {
   const title = document.getElementById("artTitle").value.trim();
   const category = document.getElementById("artCategory").value;
@@ -422,41 +494,63 @@ function handleCreateArticle() {
     .map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`)
     .join("");
 
-  const today = new Date();
-  const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-  const dateStr = `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
+  if (editingArticleId) {
+    // Editing Mode
+    const articleIndex = newsList.findIndex(a => a.id === editingArticleId);
+    if (articleIndex !== -1) {
+      // Keep existing id and date, but update other fields
+      newsList[articleIndex].title = title;
+      newsList[articleIndex].category = category;
+      newsList[articleIndex].summary = summary;
+      newsList[articleIndex].image = image;
+      newsList[articleIndex].isDefaultImage = !image;
+      newsList[articleIndex].content = contentHTML;
 
-  // ID based on title slug
-  const id = title
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "") // Remove special characters
-    .replace(/\s+/g, "-") // Replace spaces with -
-    .substring(0, 40) + "-" + Math.floor(Math.random() * 1000);
+      localStorage.setItem("costa_news", JSON.stringify(newsList));
 
-  const newArticle = {
-    id,
-    title,
-    category,
-    date: dateStr,
-    summary,
-    image,
-    isDefaultImage: !image,
-    content: contentHTML
-  };
+      if (typeof showToast === "function") {
+        showToast("Noticia actualizada correctamente.", "success");
+      }
+    }
+    cancelEdit();
+  } else {
+    // Creation Mode
+    const today = new Date();
+    const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const dateStr = `${today.getDate()} de ${monthNames[today.getMonth()]} del ${today.getFullYear()}`;
 
-  newsList.unshift(newArticle);
-  localStorage.setItem("costa_news", JSON.stringify(newsList));
+    // ID based on title slug
+    const id = title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, "") // Remove special characters
+      .replace(/\s+/g, "-") // Replace spaces with -
+      .substring(0, 40) + "-" + Math.floor(Math.random() * 1000);
 
-  // Reset Form
-  document.getElementById("createArticleForm").reset();
+    const newArticle = {
+      id,
+      title,
+      category,
+      date: dateStr,
+      summary,
+      image,
+      isDefaultImage: !image,
+      content: contentHTML
+    };
+
+    newsList.unshift(newArticle);
+    localStorage.setItem("costa_news", JSON.stringify(newsList));
+
+    // Reset Form
+    document.getElementById("createArticleForm").reset();
+
+    if (typeof showToast === "function") {
+      showToast("Noticia publicada correctamente.", "success");
+    }
+  }
 
   // Re-render
   renderNewsGrid();
   renderAdminNewsList();
-
-  if (typeof showToast === "function") {
-    showToast("Noticia publicada correctamente.", "success");
-  }
 }
 
 // Admin: Delete News Article
