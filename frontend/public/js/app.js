@@ -235,7 +235,7 @@ async function renderFeaturedNews() {
     featured.forEach(article => {
       const card = document.createElement("a");
       card.href = `noticias.html?id=${article.id}`;
-      card.className = "news-card animate-on-scroll";
+      card.className = "news-card animate-on-scroll visible";
       
       const imgSrc = article.image || "assets/images/costa-al-dia.png";
       const imgClass = article.isDefaultImage || !article.image ? "logo-contain" : "";
