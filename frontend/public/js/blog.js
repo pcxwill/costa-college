@@ -2,80 +2,8 @@
  * Costa College — Blog & News Manager
  * Handles: Dynamic loading, category filtering, reading modal, press login, and article administration.
  */
-
 // Default Seed Articles
-const DEFAULT_NEWS = [
-  {
-    id: "diciembre-2025",
-    title: "Costa al Día — Edición Diciembre",
-    category: "comunidad",
-    date: "15 de Diciembre del 2025",
-    summary: "Resumen de las actividades y logros del último mes del año escolar.",
-    image: "assets/images/costa-al-dia.png",
-    isDefaultImage: true,
-    content: `
-      <p>Estimada comunidad de Costa College, nos complace presentar la última edición del año de nuestro boletín Costa al Día.</p>
-      <p>Diciembre ha sido un mes lleno de emociones, marcado por la finalización de los procesos académicos, las ceremonias de graduación de nuestros diferentes ciclos y las actividades de cierre de talleres artísticos y deportivos.</p>
-      <p>Queremos agradecer el esfuerzo constante de todos los alumnos, profesores y el apoyo de las familias que hicieron de este 2025 un año escolar excepcional. ¡Les deseamos unas felices y reparadoras vacaciones!</p>
-    `
-  },
-  {
-    id: "despedida-4to-medio",
-    title: "Despedida 4to Medio",
-    category: "comunidad",
-    date: "20 de Noviembre del 2025",
-    summary: "Especial despedida de nuestra generación de cuarto medio.",
-    image: "assets/images/costa-al-dia.png",
-    isDefaultImage: true,
-    content: `
-      <p>Con profunda emoción despedimos a nuestra Generación de Cuartos Medios 2025 en su tradicional ceremonia de Licenciatura.</p>
-      <p>El gimnasio del colegio se vistió de gala para recibir a estudiantes, apoderados y docentes en un acto solemne marcado por los discursos de despedida, las premiaciones académicas y de trayectoria de los alumnos, y el último pase de lista.</p>
-      <p>Costa College les desea el mayor de los éxitos en los nuevos rumbos que emprenderán en la educación superior. Recuerden llevar siempre en alto los valores de nuestra institución.</p>
-    `
-  },
-  {
-    id: "septiembre-2025",
-    title: "Costa al Día — Edición Septiembre",
-    category: "comunidad",
-    date: "10 de Septiembre del 2025",
-    summary: "Celebración de fiestas patrias y actividades del mes.",
-    image: "assets/images/costa-al-dia.png",
-    isDefaultImage: true,
-    content: `
-      <p>Septiembre llenó de colores y tradiciones los patios de Costa College. Celebramos las Fiestas Patrias con nuestra tradicional Gala Folclórica.</p>
-      <p>Estudiantes de todos los niveles deleitaron a los asistentes con bailes tradicionales de las distintas zonas de nuestro país. Además, se desarrollaron competencias de juegos típicos chilenos y compartimos una jornada de convivencia y alegría.</p>
-      <p>Felicitamos a los profesores de Educación Física y de Música por la excelente organización y preparación de los estudiantes.</p>
-    `
-  },
-  {
-    id: "robotica-senior",
-    title: "Proyecto de Robótica Destaca en Senior School",
-    category: "academico",
-    date: "25 de Octubre del 2025",
-    summary: "Nuestros estudiantes de enseñanza media diseñan soluciones de automatización en tecnología.",
-    image: "", // empty will fallback to default logo
-    isDefaultImage: true,
-    content: `
-      <p>Los alumnos de Senior School presentaron sus proyectos finales del electivo de Robótica y Programación.</p>
-      <p>Utilizando microcontroladores y programación en C++, los grupos desarrollaron prototipos funcionales orientados a la sustentabilidad, tales como sistemas de riego automatizado para los jardines del colegio y sensores de ahorro energético en salas de clase.</p>
-      <p>El profesor del área destacó la capacidad de innovación de los jóvenes y el alto nivel de resolución de problemas técnicos demostrado durante el semestre.</p>
-    `
-  },
-  {
-    id: "interescolar-atletismo",
-    title: "Gran Desempeño en Interescolar de Atletismo",
-    category: "deportes",
-    date: "18 de Noviembre del 2025",
-    summary: "Costa College obtiene múltiples medallas en la competencia regional.",
-    image: "", // empty
-    isDefaultImage: true,
-    content: `
-      <p>Nuestra delegación de atletismo tuvo una sobresaliente participación en el torneo interescolar celebrado el pasado fin de semana.</p>
-      <p>Destacamos el primer lugar obtenido en la posta 4x100 metros damas categoría intermedia, así como notables marcas individuales en salto largo y lanzamiento de bala.</p>
-      <p>Felicitamos a todos nuestros deportistas por representar con garra, disciplina y juego limpio los colores de Costa College.</p>
-    `
-  }
-];
+const DEFAULT_NEWS = [];
 
 // State Manager
 let newsList = [];
@@ -135,8 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function initNewsData() {
   const storedNews = localStorage.getItem("costa_news");
   if (!storedNews) {
-    localStorage.setItem("costa_news", JSON.stringify(DEFAULT_NEWS));
-    newsList = [...DEFAULT_NEWS];
+    newsList = [];
   } else {
     newsList = JSON.parse(storedNews);
   }
@@ -145,47 +72,36 @@ async function initNewsData() {
   if (db) {
     try {
       const snapshot = await db.collection("news").get();
-      if (!snapshot.empty) {
-        const firestoreNews = [];
-        snapshot.forEach(doc => {
-          firestoreNews.push({ id: doc.id, ...doc.data() });
-        });
-        
-        // Sort chronologically/by timestamp
-        firestoreNews.sort((a, b) => {
-          const timeA = a.timestamp || 0;
-          const timeB = b.timestamp || 0;
-          return timeB - timeA;
-        });
+      const firestoreNews = [];
+      snapshot.forEach(doc => {
+        firestoreNews.push({ id: doc.id, ...doc.data() });
+      });
+      
+      // Sort chronologically/by timestamp
+      firestoreNews.sort((a, b) => {
+        const timeA = a.timestamp || 0;
+        const timeB = b.timestamp || 0;
+        return timeB - timeA;
+      });
 
-        newsList = firestoreNews;
-        localStorage.setItem("costa_news", JSON.stringify(newsList));
-        
-        // Re-render and select latest month
-        const availableMonths = getAvailableMonths();
-        if (availableMonths.length > 0) {
-          if (!currentFilter || !availableMonths.some(m => m.label === currentFilter)) {
-            currentFilter = availableMonths[0].label;
-          }
-        }
-        renderFilterButtons();
-        renderNewsGrid();
-        
-        // If on admin panel, re-render list too
-        if (typeof renderAdminNewsList === "function") {
-          renderAdminNewsList();
+      newsList = firestoreNews;
+      localStorage.setItem("costa_news", JSON.stringify(newsList));
+      
+      // Re-render and select latest month
+      const availableMonths = getAvailableMonths();
+      if (availableMonths.length > 0) {
+        if (!currentFilter || !availableMonths.some(m => m.label === currentFilter)) {
+          currentFilter = availableMonths[0].label;
         }
       } else {
-        // If Firestore is empty, seed it with the default news!
-        for (const item of newsList) {
-          const itemToSave = { ...item };
-          if (!itemToSave.timestamp) {
-            const parsed = getMonthAndYear(itemToSave.date);
-            const dateObj = new Date(parsed.year, ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"].indexOf(parsed.month), 1);
-            itemToSave.timestamp = dateObj.getTime();
-          }
-          await db.collection("news").doc(itemToSave.id).set(itemToSave);
-        }
+        currentFilter = "";
+      }
+      renderFilterButtons();
+      renderNewsGrid();
+      
+      // If on admin panel, re-render list too
+      if (typeof renderAdminNewsList === "function") {
+        renderAdminNewsList();
       }
     } catch (e) {
       console.error("Error al sincronizar con Firestore:", e);
