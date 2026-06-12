@@ -82,6 +82,29 @@ let newsList = [];
 let currentFilter = "all";
 let editingArticleId = null;
 
+// Firebase Init
+const firebaseConfig = {
+  apiKey: "AIzaSyA5sJWxVkCEbp1TozQUQcSNrfejfQFLVXw",
+  authDomain: "costa-college.firebaseapp.com",
+  projectId: "costa-college",
+  storageBucket: "costa-college.firebasestorage.app",
+  messagingSenderId: "344726618765",
+  appId: "1:344726618765:web:9a8ed9a46a6798aa87d8c4"
+};
+
+let db = null;
+if (typeof firebase !== "undefined") {
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    db = firebase.firestore();
+    console.log("[Firebase] Firestore inicializado desde el cliente.");
+  } catch (e) {
+    console.error("Error al inicializar Firebase Firestore:", e);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize News Data
   initNewsData();
@@ -109,13 +132,64 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Initialize News from LocalStorage or Seed Data
-function initNewsData() {
+async function initNewsData() {
   const storedNews = localStorage.getItem("costa_news");
   if (!storedNews) {
     localStorage.setItem("costa_news", JSON.stringify(DEFAULT_NEWS));
     newsList = [...DEFAULT_NEWS];
   } else {
     newsList = JSON.parse(storedNews);
+  }
+
+  // Load from Firestore if available
+  if (db) {
+    try {
+      const snapshot = await db.collection("news").get();
+      if (!snapshot.empty) {
+        const firestoreNews = [];
+        snapshot.forEach(doc => {
+          firestoreNews.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Sort chronologically/by timestamp
+        firestoreNews.sort((a, b) => {
+          const timeA = a.timestamp || 0;
+          const timeB = b.timestamp || 0;
+          return timeB - timeA;
+        });
+
+        newsList = firestoreNews;
+        localStorage.setItem("costa_news", JSON.stringify(newsList));
+        
+        // Re-render and select latest month
+        const availableMonths = getAvailableMonths();
+        if (availableMonths.length > 0) {
+          if (!currentFilter || !availableMonths.some(m => m.label === currentFilter)) {
+            currentFilter = availableMonths[0].label;
+          }
+        }
+        renderFilterButtons();
+        renderNewsGrid();
+        
+        // If on admin panel, re-render list too
+        if (typeof renderAdminNewsList === "function") {
+          renderAdminNewsList();
+        }
+      } else {
+        // If Firestore is empty, seed it with the default news!
+        for (const item of newsList) {
+          const itemToSave = { ...item };
+          if (!itemToSave.timestamp) {
+            const parsed = getMonthAndYear(itemToSave.date);
+            const dateObj = new Date(parsed.year, ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"].indexOf(parsed.month), 1);
+            itemToSave.timestamp = dateObj.getTime();
+          }
+          await db.collection("news").doc(itemToSave.id).set(itemToSave);
+        }
+      }
+    } catch (e) {
+      console.error("Error al sincronizar con Firestore:", e);
+    }
   }
 }
 
@@ -570,7 +644,7 @@ function cancelEdit() {
 }
 
 // Admin: Create or Edit News Article
-function handleCreateArticle() {
+async function handleCreateArticle() {
   const title = document.getElementById("artTitle").value.trim();
   const category = document.getElementById("artCategory").value;
   const summary = document.getElementById("artSummary").value.trim();
@@ -606,6 +680,17 @@ function handleCreateArticle() {
 
       localStorage.setItem("costa_news", JSON.stringify(newsList));
 
+      // Update in Firestore
+      if (db) {
+        const articleToSave = { ...newsList[articleIndex] };
+        if (!articleToSave.timestamp) {
+          articleToSave.timestamp = Date.now();
+        }
+        db.collection("news").doc(editingArticleId).set(articleToSave).catch(err => {
+          console.error("Error al actualizar noticia en Firestore:", err);
+        });
+      }
+
       // Make sure the active filter is set to the edited article's month
       const { label } = getMonthAndYear(newsList[articleIndex].date);
       currentFilter = label;
@@ -628,6 +713,7 @@ function handleCreateArticle() {
       .replace(/\s+/g, "-") // Replace spaces with -
       .substring(0, 40) + "-" + Math.floor(Math.random() * 1000);
 
+    const timestamp = Date.now();
     const newArticle = {
       id,
       title,
@@ -637,11 +723,19 @@ function handleCreateArticle() {
       image,
       pdfUrl,
       isDefaultImage: !image,
-      content: contentHTML
+      content: contentHTML,
+      timestamp
     };
 
     newsList.unshift(newArticle);
     localStorage.setItem("costa_news", JSON.stringify(newsList));
+
+    // Save to Firestore
+    if (db) {
+      db.collection("news").doc(id).set(newArticle).catch(err => {
+        console.error("Error al guardar noticia en Firestore:", err);
+      });
+    }
 
     // Set filter to the month of the new article (current month)
     const { label } = getMonthAndYear(dateStr);
@@ -666,6 +760,12 @@ function handleDeleteArticle(id) {
   newsList = newsList.filter(article => article.id !== id);
   localStorage.setItem("costa_news", JSON.stringify(newsList));
   
+  if (db) {
+    db.collection("news").doc(id).delete().catch(err => {
+      console.error("Error al eliminar noticia de Firestore:", err);
+    });
+  }
+
   // Re-evaluate filter if current one is now empty
   const availableMonths = getAvailableMonths();
   if (availableMonths.length > 0) {

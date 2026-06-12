@@ -207,7 +207,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ── Render Featured News ─────────────────────────────────────────────
-function renderFeaturedNews() {
+// ── Render Featured News ─────────────────────────────────────────────
+async function renderFeaturedNews() {
   const grid = document.getElementById("featuredNewsGrid");
   if (!grid) return;
 
@@ -273,31 +274,73 @@ function renderFeaturedNews() {
     newsList = JSON.parse(storedNews);
   }
 
-  // Display only the first 3 news items
-  const featured = newsList.slice(0, 3);
-  grid.innerHTML = "";
+  // Draw initial cards
+  const drawCards = (list) => {
+    const featured = list.slice(0, 3);
+    grid.innerHTML = "";
 
-  featured.forEach(article => {
-    const card = document.createElement("a");
-    card.href = `noticias.html?id=${article.id}`;
-    card.className = "news-card animate-on-scroll";
-    
-    const imgSrc = article.image || "assets/images/costa-al-dia.png";
-    const imgClass = article.isDefaultImage || !article.image ? "logo-contain" : "";
+    featured.forEach(article => {
+      const card = document.createElement("a");
+      card.href = `noticias.html?id=${article.id}`;
+      card.className = "news-card animate-on-scroll";
+      
+      const imgSrc = article.image || "assets/images/costa-al-dia.png";
+      const imgClass = article.isDefaultImage || !article.image ? "logo-contain" : "";
 
-    card.innerHTML = `
-      <div class="news-card-img">
-        <img src="${imgSrc}" class="${imgClass}" alt="${article.title}">
-      </div>
-      <div class="news-card-body">
-        <div class="news-card-date">${article.date}</div>
-        <h3>${article.title}</h3>
-        <p>${article.summary}</p>
-        <span class="news-card-link">Leer más →</span>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
+      card.innerHTML = `
+        <div class="news-card-img">
+          <img src="${imgSrc}" class="${imgClass}" alt="${article.title}">
+        </div>
+        <div class="news-card-body">
+          <div class="news-card-date">${article.date}</div>
+          <h3>${article.title}</h3>
+          <p>${article.summary}</p>
+          <span class="news-card-link">Leer más →</span>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  };
+
+  // Draw cached news first
+  drawCards(newsList);
+
+  // Live Sync with Firestore if available
+  const firebaseConfig = {
+    apiKey: "AIzaSyA5sJWxVkCEbp1TozQUQcSNrfejfQFLVXw",
+    authDomain: "costa-college.firebaseapp.com",
+    projectId: "costa-college",
+    storageBucket: "costa-college.firebasestorage.app",
+    messagingSenderId: "344726618765",
+    appId: "1:344726618765:web:9a8ed9a46a6798aa87d8c4"
+  };
+
+  if (typeof firebase !== "undefined") {
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      const db = firebase.firestore();
+      const snapshot = await db.collection("news").get();
+      if (!snapshot.empty) {
+        const firestoreNews = [];
+        snapshot.forEach(doc => {
+          firestoreNews.push({ id: doc.id, ...doc.data() });
+        });
+
+        firestoreNews.sort((a, b) => {
+          const timeA = a.timestamp || 0;
+          const timeB = b.timestamp || 0;
+          return timeB - timeA;
+        });
+
+        localStorage.setItem("costa_news", JSON.stringify(firestoreNews));
+        drawCards(firestoreNews);
+      }
+    } catch (e) {
+      console.error("Error al sincronizar noticias destacadas desde Firestore:", e);
+    }
+  }
 }
 
 // ── Toast Notification System ───────────────────────────────────────
