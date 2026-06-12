@@ -22,8 +22,8 @@
 /* Content Container for About Pages */
 .about-section {
   padding: var(--space-16) 0;
-  background: var(--navy);
-  color: var(--white);
+  background: var(--white);
+  color: var(--navy);
   min-height: 50vh;
 }
 
@@ -35,7 +35,7 @@
 }
 
 .about-card {
-  background: var(--navy-dark);
+  background: #183259;
   border: 1px solid rgba(212, 175, 55, 0.15);
   border-radius: var(--radius-2xl);
   padding: var(--space-8);
