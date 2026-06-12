@@ -515,19 +515,22 @@ function handlePressLogin() {
 
   if (!usernameInput || !passwordInput) return;
 
-  const username = usernameInput.value.trim();
+  const username = usernameInput.value.trim().toLowerCase();
   const password = passwordInput.value;
+
+  const isPrensa = username === "prensa" || username === "prensa@costacollege.cl";
+  const isSoporte = username === "soporte" || username === "soporte@costacollege.cl";
 
   // Simple check for simulation
   if (
-    (username === "prensa" && password === "costaprensa2026") ||
-    (username === "soporte" && password === "costasoporte2026")
+    (isPrensa && password === "costaprensa2026") ||
+    (isSoporte && password === "costasoporte2026")
   ) {
     localStorage.setItem("press_logged_in", "true");
 
     // Intenta iniciar sesión en Firebase Auth en segundo plano
     if (typeof firebase !== "undefined" && firebase.auth) {
-      const email = username === "prensa" ? "prensa@costacollege.cl" : "soporte@costacollege.cl";
+      const email = isPrensa ? "prensa@costacollege.cl" : "soporte@costacollege.cl";
       firebase.auth().signInWithEmailAndPassword(email, password).then(() => {
         console.log("[Firebase Auth] Sesión iniciada con éxito en la nube.");
       }).catch(err => {
