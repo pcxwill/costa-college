@@ -20,20 +20,20 @@ const HEADER_HTML = `<!-- Quick Links Bar -->
       <div class="nav-dropdown">
         <a href="#">Quiénes Somos <span class="arrow">▾</span></a>
         <div class="nav-dropdown-menu">
-          <a href="https://costacollege.cl/iquique/quienes-somos-2/">Misión y Visión</a>
-          <a href="https://costacollege.cl/iquique/director/">Mensaje del Director</a>
-          <a href="https://costacollege.cl/iquique/equipo-directivo/">Equipo Directivo</a>
-          <a href="https://costacollege.cl/iquique/profesores/">Docentes</a>
-          <a href="https://costacollege.cl/iquique/equipo-de-apoyo/">Convivencia Escolar</a>
+          <a href="mision-vision.html">Misión y Visión</a>
+          <a href="mensaje-director.html">Mensaje del Director</a>
+          <a href="equipo-directivo.html">Equipo Directivo</a>
+          <a href="docentes.html">Docentes</a>
+          <a href="convivencia-escolar.html">Convivencia Escolar</a>
         </div>
       </div>
 
       <div class="nav-dropdown">
         <a href="#">Ciclos <span class="arrow">▾</span></a>
         <div class="nav-dropdown-menu">
-          <a href="https://costacollege.cl/iquique/infant-school/">Infant School</a>
-          <a href="https://costacollege.cl/iquique/junior-school/">Junior School</a>
-          <a href="https://costacollege.cl/iquique/senior-school/">Senior School</a>
+          <a href="infant-school.html">Infant School</a>
+          <a href="junior-school.html">Junior School</a>
+          <a href="senior-school.html">Senior School</a>
         </div>
       </div>
 
@@ -80,9 +80,9 @@ const FOOTER_HTML = `<!-- Footer -->
       <div class="footer-col">
         <h4>Ciclos</h4>
         <ul>
-          <li><a href="https://costacollege.cl/iquique/infant-school/">Infant School</a></li>
-          <li><a href="https://costacollege.cl/iquique/junior-school/">Junior School</a></li>
-          <li><a href="https://costacollege.cl/iquique/senior-school/">Senior School</a></li>
+          <li><a href="infant-school.html">Infant School</a></li>
+          <li><a href="junior-school.html">Junior School</a></li>
+          <li><a href="senior-school.html">Senior School</a></li>
         </ul>
       </div>
       <div class="footer-col">
