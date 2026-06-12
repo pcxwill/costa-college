@@ -524,6 +524,17 @@ function handlePressLogin() {
     (username === "soporte" && password === "costasoporte2026")
   ) {
     localStorage.setItem("press_logged_in", "true");
+
+    // Intenta iniciar sesión en Firebase Auth en segundo plano
+    if (typeof firebase !== "undefined" && firebase.auth) {
+      const email = username === "prensa" ? "prensa@costacollege.cl" : "soporte@costacollege.cl";
+      firebase.auth().signInWithEmailAndPassword(email, password).then(() => {
+        console.log("[Firebase Auth] Sesión iniciada con éxito en la nube.");
+      }).catch(err => {
+        console.warn("[Firebase Auth] No se pudo iniciar sesión en Firebase. Se usará el modo offline/reglas públicas:", err.message);
+      });
+    }
+
     checkLoginState();
     closeAllModals();
     
@@ -548,6 +559,13 @@ function handlePressLogin() {
 // Logout Press User
 function handlePressLogout() {
   localStorage.removeItem("press_logged_in");
+
+  if (typeof firebase !== "undefined" && firebase.auth) {
+    firebase.auth().signOut().catch(err => {
+      console.warn("[Firebase Auth] Error al cerrar sesión en Firebase:", err.message);
+    });
+  }
+
   checkLoginState();
   if (typeof showToast === "function") {
     showToast("Sesión de Prensa cerrada.", "info");
@@ -688,6 +706,9 @@ async function handleCreateArticle() {
         }
         db.collection("news").doc(editingArticleId).set(articleToSave).catch(err => {
           console.error("Error al actualizar noticia en Firestore:", err);
+          if (typeof showToast === "function") {
+            showToast("Error en Firebase: Permiso denegado. Configura las Reglas en Firebase Console.", "error");
+          }
         });
       }
 
@@ -734,6 +755,9 @@ async function handleCreateArticle() {
     if (db) {
       db.collection("news").doc(id).set(newArticle).catch(err => {
         console.error("Error al guardar noticia en Firestore:", err);
+        if (typeof showToast === "function") {
+          showToast("Error en Firebase: Permiso denegado. Configura las Reglas en Firebase Console.", "error");
+        }
       });
     }
 
@@ -763,6 +787,9 @@ function handleDeleteArticle(id) {
   if (db) {
     db.collection("news").doc(id).delete().catch(err => {
       console.error("Error al eliminar noticia de Firestore:", err);
+      if (typeof showToast === "function") {
+        showToast("Error en Firebase: Permiso denegado al eliminar. Configura las Reglas en Firebase Console.", "error");
+      }
     });
   }
 
