@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mensaje del Director — Costa College Iquique</title>
-  <meta name="description" content="Mensaje oficial de la dirección de Costa College Iquique.">
+  <meta name="description" content="Mensaje oficial y bienvenida del director de Costa College Iquique, Mister Marco Rojas Eguiluz.">
   <link rel="stylesheet" href="styles/main.css">
   <link rel="stylesheet" href="styles/layout.css">
   <link rel="stylesheet" href="styles/about.css">
@@ -21,14 +21,58 @@
     <img src="assets/images/director-banner.png" alt="Mensaje del Director Costa College Banner">
   </section>
 
-  <main class="about-section" style="display: flex; align-items: center; justify-content: center;">
+  <!-- Content Section -->
+  <main class="about-section">
     <div class="container">
-      <div class="placeholder-page animate-on-scroll visible">
-        <span class="placeholder-illustration">👨‍💼</span>
-        <span class="placeholder-badge">Próximamente</span>
-        <h1>Mensaje del Director</h1>
-        <p>Estamos preparando este espacio para compartir las palabras oficiales y el saludo de bienvenida de nuestro director, Mr. Marcos Rojas E. Vuelve pronto para ver las actualizaciones.</p>
-        <a href="index.html" class="btn btn-outline-gold">Volver al Inicio</a>
+      <div class="director-grid">
+
+        <!-- Left Column: Profile Card -->
+        <aside class="director-profile-card animate-on-scroll">
+          <div class="director-photo-container">
+            <img src="assets/images/director.png" alt="Mister Marco Rojas Eguiluz">
+          </div>
+          <h2 class="director-name">Mister Marco Rojas Eguiluz</h2>
+          <p class="director-title">Director / Head of School</p>
+        </aside>
+
+        <!-- Right Column: Message Content -->
+        <div class="director-content-card animate-on-scroll">
+          <!-- Language Tab Switcher -->
+          <div class="director-tabs-nav">
+            <button class="director-tab-btn active" data-tab="es">Español</button>
+            <button class="director-tab-btn" data-tab="en">English</button>
+          </div>
+
+          <!-- Spanish Tab Pane -->
+          <div id="tab-es" class="director-tab-pane active">
+            <div class="director-body-text">
+              <p><strong>Querida comunidad Costa College:</strong></p>
+              <p>Brindarle a cada uno de ustedes una calurosa bienvenida a nuestra comunidad educativa.</p>
+              <p>Esperamos, como colegio, poder sostener una relación académica excepcional, efectiva y de apoyo con todos ustedes. Me siento especialmente honrado de liderar esta comunidad y poder desempeñar mi rol como Director para garantizar que sigamos trabajando colaborativamente, padres, estudiantes y todas las personas que trabajan en Costa College. Mi objetivo es desarrollar y mantener un ambiente de respeto, disciplina y altos estándares académicos, que tengamos un colegio en el que todos estén seguros, tratados con respeto y motivados a aprender. Esto es posible gracias al personal dinámico y enérgico que aporta con experiencia, unidad y con firme intención de mejorar el aprendizaje de nuestros estudiantes.</p>
+              <p>Cabe recordar que este proyecto lo iniciamos en el año 2018 y hemos visto todos los cambios por los que ha pasado nuestro establecimiento. Nuestros objetivos principales como colegio, en un mundo cambiante y desafiante como el de hoy, son fomentar el inglés como segundo idioma y la tecnología principalmente. El futuro dependerá de la capacidad de comunicarse en inglés, por lo tanto, hemos instalado un programa de inmersión en el idioma desde Playgroup hasta Sexto año básico y, junto con la implementación de tecnología, somos capaces de preparar a nuestros estudiantes con las habilidades técnicas para enfrentar los desafíos del siglo 21.</p>
+              <p>Constantemente supervisamos y actualizamos a nuestro personal con las últimas tendencias e innovaciones en educación. Estamos comprometidos con el desarrollo de los estudiantes como un todo; proporcionando un entorno motivante y desafiante donde todos pueden alcanzar su potencial. En Costa College, nuestros estudiantes se sienten seguros y capaces de desarrollar su aprendizaje de manera independiente y creativa. Sobre todo, deseamos que nuestro alumnado se sienta comprometido, con un fuerte sentido de pertenencia, lo que sin duda conllevará a que desarrollen habilidades para convertirse en personas solidarias y responsables de la sociedad.</p>
+              <div class="director-signature">
+                <p>Un saludo afectuoso,</p>
+                <p><strong>Mister Marco Rojas Eguiluz</strong><br>Director</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- English Tab Pane -->
+          <div id="tab-en" class="director-tab-pane">
+            <div class="director-body-text">
+              <p><strong>Dear School Community,</strong></p>
+              <p>A very warm and happy welcome to Costa College learning community. We look forward to sharing an exceptional academic relationship with you, one that will be supportive and successful. I feel especially honored to lead our community and to play my role in ensuring that we continue working together, parents, students and every single person who works at Costa College. It is my aim to develop and maintain an environment of respect, discipline, and high academic standards, a school in which everyone is safe, treated with respect and encouraged to learn. This is made possible by the dynamic and energetic staff who between them, bring a wealth of experiences, and are united in their intention of improving students’ learning.</p>
+              <p>It is worth remembering that we started this project in 2018 and we have seen all the changes that the school has gone through. In today’s rapidly changing and challenging world, we believe it to be the school’s primary tasks to foster, English, as a second language and technology. The future will rely on the ability to communicate in English, we have encouraged an immersion program from playgroup to 6 th grade and along with technology, we are able to prepare our students for the challenges of the future with the technical skills to complete in the 21st century.</p>
+              <p>We constantly monitor and update with the latest trends and innovations in education. We are committed to developing students as a whole; providing an exciting and challenging environment where everyone can achieve their potential. At Costa College, our students feel safe to develop as independent learners, developing creatively and academically. Above all, I want students in my school to be happy, developing skills to become caring, responsible members of society, have a love of learning and lively enquiring minds.</p>
+              <div class="director-signature">
+                <p>Kind regards,</p>
+                <p><strong>Mister Marco Rojas E.</strong><br>Head of School</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   </main>
@@ -41,6 +85,32 @@
   <!-- Scripts -->
   <script src="js/components.js"></script>
   <script src="js/app.js"></script>
+
+  <!-- Interactive Tabs Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabButtons = document.querySelectorAll('.director-tab-btn');
+      const tabPanes = document.querySelectorAll('.director-tab-pane');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          // Deactivate all buttons
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          // Deactivate all panes
+          tabPanes.forEach(pane => pane.classList.remove('active'));
+
+          // Activate selected button
+          button.classList.add('active');
+          // Activate corresponding pane
+          const tabId = button.getAttribute('data-tab');
+          const targetPane = document.getElementById(`tab-${tabId}`);
+          if (targetPane) {
+            targetPane.classList.add('active');
+          }
+        });
+      });
+    });
+  </script>
 </body>
 
 </html>

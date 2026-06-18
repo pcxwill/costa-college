@@ -22,9 +22,7 @@ const HEADER_HTML = `<!-- Quick Links Bar -->
         <div class="nav-dropdown-menu">
           <a href="mision-vision.html">Misión y Visión</a>
           <a href="mensaje-director.html">Mensaje del Director</a>
-          <a href="equipo-directivo.html">Equipo Directivo</a>
-          <a href="docentes.html">Docentes</a>
-          <a href="convivencia-escolar.html">Convivencia Escolar</a>
+          <a href="comunidad-escolar.html">Comunidad Escolar</a>
         </div>
       </div>
 
