@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Infant School — Costa College Iquique</title>
-  <meta name="description" content="Ciclo Infant School (Educación Parvularia) de Costa College Iquique.">
+  <meta name="description" content="Ciclo Infant School (Educación Parvularia) de Costa College Iquique - Playgroup, Pre-Kinder y Kinder.">
   <link rel="stylesheet" href="styles/main.css">
   <link rel="stylesheet" href="styles/layout.css">
   <link rel="stylesheet" href="styles/about.css">
@@ -21,14 +21,67 @@
     <img src="assets/images/infant-school-banner.png" alt="Infant School Costa College Banner">
   </section>
 
-  <main class="about-section" style="display: flex; align-items: center; justify-content: center;">
+  <!-- Content Section -->
+  <main class="about-section">
     <div class="container">
-      <div class="placeholder-page animate-on-scroll visible">
-        <span class="placeholder-illustration">🧸</span>
-        <span class="placeholder-badge">Próximamente</span>
-        <h1>Infant School</h1>
-        <p>Estamos diseñando la sección especial para nuestro ciclo de Educación Parvularia (Playgroup, Pre-Kinder y Kinder). Pronto podrás conocer nuestro proyecto educativo inicial enfocado en la inmersión temprana del inglés.</p>
-        <a href="index.html" class="btn btn-outline-gold">Volver al Inicio</a>
+      <div class="cycle-grid">
+
+        <!-- Left Column: Profile Card -->
+        <aside class="cycle-profile-card animate-on-scroll">
+          <div class="cycle-avatar-container">
+            <span>GC</span>
+          </div>
+          <h2 class="cycle-coordinator-name">Miss Gigloglia Cordano C.</h2>
+          <p class="cycle-coordinator-title">Coordinadora Infant School</p>
+          
+          <a href="https://costacollege.cl/iquique/wp-content/uploads/2026/06/PISE-Infant-Los-Tatitas-2026.pdf" target="_blank" rel="noopener noreferrer" class="cycle-document-btn">
+            <span>📋</span> PISE Infant School 2026
+          </a>
+        </aside>
+
+        <!-- Right Column: Message Content -->
+        <div class="cycle-content-card animate-on-scroll">
+          <!-- Language Tab Switcher -->
+          <div class="cycle-tabs-nav">
+            <button class="cycle-tab-btn active" data-tab="es">Español</button>
+            <button class="cycle-tab-btn" data-tab="en">English</button>
+          </div>
+
+          <!-- Spanish Tab Pane -->
+          <div id="tab-es" class="cycle-tab-pane active">
+            <div class="cycle-body-text">
+              <p><strong>Estimadas Familias:</strong></p>
+              <p>En Infant School Costa College creemos firmemente que un niño feliz es un niño exitoso. Por ello, estamos comprometidos en ofrecer un ambiente positivo y estimulante donde nuestros estudiantes puedan aprender, jugar y compartir sus opiniones y experiencias de manera libre y enriquecedora.</p>
+              <p>Nuestro propósito es diseñar y aplicar un proceso de aprendizaje que permita a cada niño desarrollar su máximo potencial y, de esta forma, convertirse en un estudiante autónomo e independiente.</p>
+              <p>Nos enfocamos en acompañar un desarrollo emocional y social saludable durante la primera infancia, basándonos en los principios de la neuroeducación. Por esta razón, la educación emocional es una prioridad para toda nuestra comunidad educativa. Valoramos profundamente el compromiso y la participación de las familias en este proceso fundamental.</p>
+              <p>Además, buscamos fortalecer un proceso de enseñanza bilingüe para todos nuestros estudiantes. El inglés se enseña como segunda lengua siguiendo la metodología CLIL, que ofrece experiencias de aprendizaje significativas y lúdicas, preparándolos para la vida a través de actividades diseñadas especialmente para ellos.</p>
+              <p>En nombre de todo nuestro equipo, los invitamos a ser parte activa de este maravilloso viaje de aprendizaje, recordando siempre que: <em>“Se necesitarán grandes corazones para formar la mente de nuestros pequeños y pequeñas.”</em></p>
+              
+              <div class="director-signature">
+                <p>Reciban un cordial saludo,</p>
+                <p><strong>Gigloglia Cordano Carrizo</strong><br>Coordinadora Ciclo Infant School</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- English Tab Pane -->
+          <div id="tab-en" class="cycle-tab-pane">
+            <div class="cycle-body-text">
+              <p><strong>Dear Families,</strong></p>
+              <p>At Infant School Costa College, we firmly believe that a happy child is a successful child. For this reason, we are committed to providing a positive and stimulating environment where our students can learn, play, and freely share their opinions and experiences in an enriching way.</p>
+              <p>Our goal is to design and implement a learning process that allows each child to develop their full potential and, in doing so, become an autonomous and independent learner.</p>
+              <p>We focus on supporting healthy emotional and social development during early childhood, based on the principles of neuroeducation. For this reason, emotional education is a priority for our entire educational community. We deeply value the commitment and participation of families in this fundamental process.</p>
+              <p>Additionally, we aim to strengthen a bilingual teaching process for all our students. English is taught as a second language following the CLIL methodology, which offers meaningful and playful learning experiences, preparing them for life through activities specially designed for them.</p>
+              <p>On behalf of our entire team, we invite you to actively participate in this wonderful learning journey, always remembering that: <em>“It takes big hearts to shape the minds of our little ones.”</em></p>
+              
+              <div class="director-signature">
+                <p>Kind regards,</p>
+                <p><strong>Gigloglia Cordano Carrizo</strong><br>Cycle Coordinator Infant School</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   </main>
@@ -41,6 +94,32 @@
   <!-- Scripts -->
   <script src="js/components.js"></script>
   <script src="js/app.js"></script>
+
+  <!-- Interactive Tabs Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabButtons = document.querySelectorAll('.cycle-tab-btn');
+      const tabPanes = document.querySelectorAll('.cycle-tab-pane');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          // Deactivate all buttons
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          // Deactivate all panes
+          tabPanes.forEach(pane => pane.classList.remove('active'));
+
+          // Activate selected button
+          button.classList.add('active');
+          // Activate corresponding pane
+          const tabId = button.getAttribute('data-tab');
+          const targetPane = document.getElementById(`tab-${tabId}`);
+          if (targetPane) {
+            targetPane.classList.add('active');
+          }
+        });
+      });
+    });
+  </script>
 </body>
 
 </html>

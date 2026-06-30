@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Junior School — Costa College Iquique</title>
-  <meta name="description" content="Ciclo Junior School (Educación Básica) de Costa College Iquique.">
+  <meta name="description" content="Ciclo Junior School (Educación Básica de 1º a 6º básico) de Costa College Iquique.">
   <link rel="stylesheet" href="styles/main.css">
   <link rel="stylesheet" href="styles/layout.css">
   <link rel="stylesheet" href="styles/about.css">
@@ -21,14 +21,63 @@
     <img src="assets/images/junior-school-banner.png" alt="Junior School Costa College Banner">
   </section>
 
-  <main class="about-section" style="display: flex; align-items: center; justify-content: center;">
+  <!-- Content Section -->
+  <main class="about-section">
     <div class="container">
-      <div class="placeholder-page animate-on-scroll visible">
-        <span class="placeholder-illustration">✏️</span>
-        <span class="placeholder-badge">Próximamente</span>
-        <h1>Junior School</h1>
-        <p>Estamos desarrollando la sección para nuestro ciclo de Educación General Básica (de 1º a 6º Básico). En este espacio compartiremos la propuesta pedagógica, planes de estudio bilingüe y las actividades de este nivel.</p>
-        <a href="index.html" class="btn btn-outline-gold">Volver al Inicio</a>
+      <div class="cycle-grid">
+
+        <!-- Left Column: Profile Card -->
+        <aside class="cycle-profile-card animate-on-scroll">
+          <div class="cycle-avatar-container">
+            <span>MB</span>
+          </div>
+          <h2 class="cycle-coordinator-name">Miss Marcela Barría De La Vega</h2>
+          <p class="cycle-coordinator-title">Jefa de U.T.P. / Academic Coordinator</p>
+          
+          <a href="https://costacollege.cl/iquique/wp-content/uploads/2026/05/PISE-2026-Costa-College-v-1.0.pdf" target="_blank" rel="noopener noreferrer" class="cycle-document-btn">
+            <span>📋</span> PISE Costa College 2026
+          </a>
+        </aside>
+
+        <!-- Right Column: Message Content -->
+        <div class="cycle-content-card animate-on-scroll">
+          <!-- Language Tab Switcher -->
+          <div class="cycle-tabs-nav">
+            <button class="cycle-tab-btn active" data-tab="es">Español</button>
+            <button class="cycle-tab-btn" data-tab="en">English</button>
+          </div>
+
+          <!-- Spanish Tab Pane -->
+          <div id="tab-es" class="cycle-tab-pane active">
+            <div class="cycle-body-text">
+              <p><strong>Queridas Familias:</strong></p>
+              <p>En el Ciclo Enseñanza Básica desarrollamos, desde Primero básico, la autonomía de nuestros estudiantes, potenciando la curiosidad, motivándolos y aportando experiencias significativas y habilidades base para impulsar los aprendizajes desarrollados previamente en Infant School.</p>
+              <p>Por lo mismo, trabajamos generando una base robusta y espíritu crítico consistente para enfrentar los desafíos que demanda nuestra Enseñanza Media, a través del reconocimiento de sus capacidades, talento y creatividad.</p>
+              <p>Este ciclo comprende cursos desde Primero básico a Sexto básico, en el cual se imparten en inglés las asignaturas de Math, Social Studies, Science, Arts and Technology. Los estudiantes tienen la posibilidad de tener una rica interacción en el idioma inglés en las distintas asignaturas dando énfasis en una comunicación natural y fluida entre sus pares, docentes y comunidad en general.</p>
+              
+              <div class="director-signature">
+                <p>Un saludo afectuoso,</p>
+                <p><strong>Miss Marcela Barría De La Vega</strong><br>Jefa de U.T.P. / Academic Coordinator</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- English Tab Pane -->
+          <div id="tab-en" class="cycle-tab-pane">
+            <div class="cycle-body-text">
+              <p><strong>Dear Families,</strong></p>
+              <p>In the Elementary School Cycle, starting from First Grade, we develop our students' autonomy, fostering curiosity, motivating them, and providing meaningful experiences and foundational skills to build upon the learning previously developed in Infant School.</p>
+              <p>Likewise, we work to build a robust foundation and a consistent critical spirit to face the challenges demanded by High School, recognizing their abilities, talent, and creativity.</p>
+              <p>This cycle includes courses from First Grade to Sixth Grade, in which the subjects of Math, Social Studies, Science, Arts, and Technology are taught in English. Students have the opportunity for rich interaction in the English language across the different subjects, emphasizing natural and fluent communication among peers, teachers, and the community in general.</p>
+              
+              <div class="director-signature">
+                <p>Kind regards,</p>
+                <p><strong>Miss Marcela Barría De La Vega</strong><br>Head of U.T.P. / Academic Coordinator</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   </main>
@@ -41,6 +90,32 @@
   <!-- Scripts -->
   <script src="js/components.js"></script>
   <script src="js/app.js"></script>
+
+  <!-- Interactive Tabs Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabButtons = document.querySelectorAll('.cycle-tab-btn');
+      const tabPanes = document.querySelectorAll('.cycle-tab-pane');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          // Deactivate all buttons
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          // Deactivate all panes
+          tabPanes.forEach(pane => pane.classList.remove('active'));
+
+          // Activate selected button
+          button.classList.add('active');
+          // Activate corresponding pane
+          const tabId = button.getAttribute('data-tab');
+          const targetPane = document.getElementById(`tab-${tabId}`);
+          if (targetPane) {
+            targetPane.classList.add('active');
+          }
+        });
+      });
+    });
+  </script>
 </body>
 
 </html>

@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Senior School — Costa College Iquique</title>
-  <meta name="description" content="Ciclo Senior School (Enseñanza Media) de Costa College Iquique.">
+  <meta name="description" content="Ciclo Senior School (Enseñanza Media de 7º básico a 4º medio) de Costa College Iquique.">
   <link rel="stylesheet" href="styles/main.css">
   <link rel="stylesheet" href="styles/layout.css">
   <link rel="stylesheet" href="styles/about.css">
@@ -21,14 +21,63 @@
     <img src="assets/images/senior-school-banner.png" alt="Senior School Costa College Banner">
   </section>
 
-  <main class="about-section" style="display: flex; align-items: center; justify-content: center;">
+  <!-- Content Section -->
+  <main class="about-section">
     <div class="container">
-      <div class="placeholder-page animate-on-scroll visible">
-        <span class="placeholder-illustration">🎓</span>
-        <span class="placeholder-badge">Próximamente</span>
-        <h1>Senior School</h1>
-        <p>Estamos estructurando la sección para nuestro ciclo de Enseñanza Media (de 7º Básico a 4º Medio). Pronto encontrarás información sobre orientación vocacional, planes electivos y preparación para la educación superior.</p>
-        <a href="index.html" class="btn btn-outline-gold">Volver al Inicio</a>
+      <div class="cycle-grid">
+
+        <!-- Left Column: Profile Card -->
+        <aside class="cycle-profile-card animate-on-scroll">
+          <div class="cycle-avatar-container">
+            <span>MB</span>
+          </div>
+          <h2 class="cycle-coordinator-name">Miss Marcela Barría De La Vega</h2>
+          <p class="cycle-coordinator-title">Jefa de U.T.P. / Academic Coordinator</p>
+          
+          <a href="https://costacollege.cl/iquique/wp-content/uploads/2026/05/PISE-2026-Costa-College-v-1.0.pdf" target="_blank" rel="noopener noreferrer" class="cycle-document-btn">
+            <span>📋</span> PISE Costa College 2026
+          </a>
+        </aside>
+
+        <!-- Right Column: Message Content -->
+        <div class="cycle-content-card animate-on-scroll">
+          <!-- Language Tab Switcher -->
+          <div class="cycle-tabs-nav">
+            <button class="cycle-tab-btn active" data-tab="es">Español</button>
+            <button class="cycle-tab-btn" data-tab="en">English</button>
+          </div>
+
+          <!-- Spanish Tab Pane -->
+          <div id="tab-es" class="cycle-tab-pane active">
+            <div class="cycle-body-text">
+              <p><strong>Queridas Familias:</strong></p>
+              <p>Nuestro Sello en Enseñanza Media se caracteriza por entregar una enseñanza enfocada a una formación valórica y académica. Comprende cursos desde Séptimo básico a Cuarto año de enseñanza media.</p>
+              <p>En este último ciclo orientamos la preparación de los estudiantes a enfrentar el mundo exterior, entregándoles todas las herramientas necesarias para construir el mundo donde quieren vivir, brindándoles herramientas necesarias para que puedan tener respuestas creativas y flexibles, además de contar con la guía y acompañamiento para poder elaborar sus propios proyectos de vida.</p>
+              <p>Los pilares fundamentales que nos rigen se basan sobre la base del respeto, la tolerancia, el compañerismo y la solidaridad.</p>
+              
+              <div class="director-signature">
+                <p>Un saludo afectuoso,</p>
+                <p><strong>Miss Marcela Barría De La Vega</strong><br>Jefa de U.T.P. / Academic Coordinator</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- English Tab Pane -->
+          <div id="tab-en" class="cycle-tab-pane">
+            <div class="cycle-body-text">
+              <p><strong>Dear Families,</strong></p>
+              <p>Our Seal in High School (Enseñanza Media) is characterized by providing education focused on academic and moral development. It includes courses from Seventh Grade to Twelfth Grade (4th year of High School).</p>
+              <p>In this final cycle, we guide students in their preparation to face the outside world, providing them with all the necessary tools to build the world in which they wish to live, offering resources so they can develop creative and flexible solutions, in addition to receiving guidance and accompaniment to design their own life plans.</p>
+              <p>The fundamental pillars that govern us are built upon the foundation of respect, tolerance, companionship, and solidarity.</p>
+              
+              <div class="director-signature">
+                <p>Kind regards,</p>
+                <p><strong>Miss Marcela Barría De La Vega</strong><br>Head of U.T.P. / Academic Coordinator</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   </main>
@@ -41,6 +90,32 @@
   <!-- Scripts -->
   <script src="js/components.js"></script>
   <script src="js/app.js"></script>
+
+  <!-- Interactive Tabs Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabButtons = document.querySelectorAll('.cycle-tab-btn');
+      const tabPanes = document.querySelectorAll('.cycle-tab-pane');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          // Deactivate all buttons
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          // Deactivate all panes
+          tabPanes.forEach(pane => pane.classList.remove('active'));
+
+          // Activate selected button
+          button.classList.add('active');
+          // Activate corresponding pane
+          const tabId = button.getAttribute('data-tab');
+          const targetPane = document.getElementById(`tab-${tabId}`);
+          if (targetPane) {
+            targetPane.classList.add('active');
+          }
+        });
+      });
+    });
+  </script>
 </body>
 
 </html>
